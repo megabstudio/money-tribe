@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment variables
+.env.local
+.env.*.local
+
+# Editor & OS
+.DS_Store
+*.DS_Store
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# PWA dev files
+dev-dist/
