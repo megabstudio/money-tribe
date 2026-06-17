@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router'
-import { ArrowLeft, Calendar, Users } from 'lucide-react'
+import { ArrowLeft, Calendar, Flag, Users, Search } from 'lucide-react'
 
 interface Tribe {
   id: number
@@ -57,7 +57,7 @@ function TribeCard({ tribe, onClick }: { tribe: Tribe; onClick: () => void }) {
             })}
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-[9px] font-medium text-foreground">
+            <span className="text-[11px] font-medium text-foreground">
               {tribe.currentRound}/{tribe.totalRounds}
             </span>
           </div>
@@ -68,7 +68,7 @@ function TribeCard({ tribe, onClick }: { tribe: Tribe; onClick: () => void }) {
       <div className="mb-3">
         <div className="flex justify-between items-center mb-1.5">
           <span className="text-[10px] font-bold" style={{ color: tribe.accentColor }}>{pct}%</span>
-          <span className="text-[9px] text-muted-foreground">Current round</span>
+          <span className="text-[10px] text-muted-foreground">Current round</span>
         </div>
         <div className="h-1.5 bg-muted rounded-full overflow-hidden">
           <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, backgroundColor: tribe.accentColor }} />
@@ -84,7 +84,7 @@ function TribeCard({ tribe, onClick }: { tribe: Tribe; onClick: () => void }) {
           </span>
         </div>
         <div className="flex items-center gap-1.5">
-          <Calendar size={12} className="text-muted-foreground flex-shrink-0" />
+          <Flag size={12} className="text-muted-foreground flex-shrink-0" />
           <span className="text-[11px] text-muted-foreground">
             End date: <span className="text-foreground font-semibold">{tribe.endDate}</span>
           </span>
@@ -117,11 +117,12 @@ export default function YourTribes() {
           </div>
 
           {/* Search */}
-          <div className="px-4 py-4">
+          <div className="px-4 py-4 relative">
+            <Search size={16} className="absolute left-7 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
             <input
               type="text"
               placeholder="Search tribe name"
-              className="w-full bg-input-background border border-border rounded-lg h-11 px-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-colors"
+              className="w-full bg-input-background border border-border rounded-lg h-11 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-colors"
             />
           </div>
 

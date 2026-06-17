@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
 import {
   Bell, Moon, Sun, ChevronRight, Plus,
-  Home, Wallet, User, Users, Calendar, TrendingUp,
+  Home, MessageCircle, User, Calendar, TrendingUp,
 } from "lucide-react";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -154,9 +154,21 @@ function TribeCard({ tribe, onClick }: { tribe: Tribe; onClick: () => void }) {
       <div className="flex items-start justify-between gap-2">
         <div>
           <p className="font-semibold text-card-foreground text-[13px] leading-tight">{tribe.name}</p>
-          <p className="text-muted-foreground text-[11px] mt-0.5">
-            {tribe.members}/{tribe.maxMembers} members
-          </p>
+          <div className="flex items-center gap-1.5 mt-1">
+            <div className="flex -space-x-1">
+              {tribe.avatarInitials.slice(0, 3).map((init, i) => (
+                <div key={i} className="w-[18px] h-[18px] rounded-full bg-muted border-[1.5px] border-card flex items-center justify-center text-[7px] font-semibold text-muted-foreground flex-shrink-0">
+                  {init}
+                </div>
+              ))}
+              {tribe.avatarInitials.length > 3 && (
+                <div className="w-[18px] h-[18px] rounded-full bg-accent border-[1.5px] border-card flex items-center justify-center text-[7px] font-semibold text-muted-foreground flex-shrink-0">
+                  +{tribe.avatarInitials.length - 3}
+                </div>
+              )}
+            </div>
+            <p className="text-muted-foreground text-[11px]">{tribe.members}/{tribe.maxMembers}</p>
+          </div>
         </div>
 
         {/* Member payout circle — each dash = 1 member, green = paid out */}
@@ -186,7 +198,7 @@ function TribeCard({ tribe, onClick }: { tribe: Tribe; onClick: () => void }) {
             })}
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-[9px] font-semibold text-card-foreground">
+            <span className="text-[11px] font-semibold text-card-foreground">
               {tribe.currentRound}/{tribe.maxMembers}
             </span>
           </div>
@@ -288,13 +300,15 @@ function UpcomingSlide({ tribe }: { tribe: UpcomingTribe }) {
 
 // ─── Dashboard ──────────────────────────────────────────────────────────────────────
 
-type NavTab = "home" | "wallet" | "profile" | "tribes"
+type NavTab = "home" | "messages" | "notifications" | "user"
 
-const NAV_ITEMS: { id: NavTab; Icon: typeof Home; label: string }[] = [
-  { id: "home",   Icon: Home,   label: "Home"   },
-  { id: "wallet", Icon: Wallet, label: "Wallet" },
-  { id: "profile", Icon: User,  label: "Profile" },
-  { id: "tribes", Icon: Users,  label: "Tribes" },
+const NAV_ITEMS_LEFT:  { id: NavTab; Icon: typeof Home; label: string }[] = [
+  { id: "home",     Icon: Home,          label: "Home"     },
+  { id: "messages", Icon: MessageCircle, label: "Messages" },
+]
+const NAV_ITEMS_RIGHT: { id: NavTab; Icon: typeof Home; label: string }[] = [
+  { id: "notifications", Icon: Bell, label: "Alerts"  },
+  { id: "user",          Icon: User, label: "Profile" },
 ]
 
 export default function Dashboard() {
@@ -305,7 +319,6 @@ export default function Dashboard() {
 
   const handleNavClick = (id: NavTab) => {
     setActiveTab(id)
-    if (id === "tribes") navigate("/your-tribes")
   }
   const sliderRef = useRef<HTMLDivElement>(null);
 
@@ -391,7 +404,7 @@ export default function Dashboard() {
                 aria-label="Notifications"
               >
                 <Bell size={15} />
-                <span className="absolute top-[9px] right-[9px] w-2 h-2 rounded-full bg-primary border-2 border-muted" />
+                <span className="absolute top-[9px] right-[9px] w-2 h-2 rounded-full bg-destructive border-2 border-muted" />
               </button>
             </div>
           </div>
@@ -481,7 +494,7 @@ export default function Dashboard() {
 
               {/* New tribe CTA */}
               <div
-                className="min-w-[100px] bg-muted rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-accent transition-colors"
+                className="min-w-[160px] bg-muted rounded-2xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-accent transition-colors"
                 style={{ minHeight: 210 }}
               >
                 <div
@@ -543,7 +556,7 @@ export default function Dashboard() {
         {/* ── Bottom Nav ── */}
         <div className="flex-shrink-0 bg-card border-t border-border">
           <div className="flex items-center justify-around py-2 px-2">
-            {NAV_ITEMS.slice(0, 2).map(({ id, Icon, label }) => {
+            {NAV_ITEMS_LEFT.map(({ id, Icon, label }) => {
               const isActive = activeTab === id
               return (
                 <button
@@ -555,7 +568,7 @@ export default function Dashboard() {
                   <span className={`text-[10px] font-semibold transition-colors ${isActive ? "text-primary" : "text-muted-foreground"}`}>
                     {label}
                   </span>
-                  {isActive && <span className="absolute -bottom-1 w-1 h-1 rounded-full bg-primary" />}
+                  {isActive && <span className="absolute -top-1 left-1/2 -translate-x-1/2 w-6 h-[3px] rounded-full bg-primary" />}
                 </button>
               )
             })}
@@ -570,7 +583,7 @@ export default function Dashboard() {
               <Plus size={28} className="text-white" />
             </button>
 
-            {NAV_ITEMS.slice(2).map(({ id, Icon, label }) => {
+            {NAV_ITEMS_RIGHT.map(({ id, Icon, label }) => {
               const isActive = activeTab === id
               return (
                 <button
@@ -578,11 +591,16 @@ export default function Dashboard() {
                   onClick={() => handleNavClick(id)}
                   className="flex flex-col items-center gap-0.5 px-4 py-1 rounded-xl transition-all relative"
                 >
-                  <Icon size={20} className={isActive ? "text-primary" : "text-muted-foreground"} />
+                  <span className="relative">
+                    <Icon size={20} className={isActive ? "text-primary" : "text-muted-foreground"} />
+                    {id === "notifications" && (
+                      <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-destructive border-2 border-card" />
+                    )}
+                  </span>
                   <span className={`text-[10px] font-semibold transition-colors ${isActive ? "text-primary" : "text-muted-foreground"}`}>
                     {label}
                   </span>
-                  {isActive && <span className="absolute -bottom-1 w-1 h-1 rounded-full bg-primary" />}
+                  {isActive && <span className="absolute -top-1 left-1/2 -translate-x-1/2 w-6 h-[3px] rounded-full bg-primary" />}
                 </button>
               )
             })}

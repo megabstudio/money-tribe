@@ -57,7 +57,7 @@ export default function ForgotPassword() {
 
       {/* Title */}
       <h1 className="font-bold text-foreground text-2xl leading-tight mb-8">
-        Set a new<br />password
+        Reset your password
       </h1>
 
       {/* Email */}
