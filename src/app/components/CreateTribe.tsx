@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { ArrowLeft, MoreVertical, Check, Upload, X, ChevronDown, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, MoreVertical, Check, Search, X, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 
 // ─── Calendar Picker ──────────────────────────────────────────────────────────
 
@@ -53,7 +53,6 @@ function CalendarPicker({ value, onChange, onClose }: {
 
   return (
     <div className="absolute z-50 bg-popover rounded-2xl shadow-2xl border border-border p-4 w-[280px]" style={{ top: "100%", left: 0, marginTop: 4 }}>
-      {/* Month/Year nav */}
       <div className="flex items-center justify-between mb-3">
         <button onClick={prevMonth} className="p-1 rounded-full hover:bg-muted transition-colors">
           <ChevronLeft size={18} className="text-foreground" />
@@ -63,13 +62,11 @@ function CalendarPicker({ value, onChange, onClose }: {
           <ChevronRight size={18} className="text-foreground" />
         </button>
       </div>
-      {/* Day-of-week headers */}
       <div className="grid grid-cols-7 mb-1">
         {DAYS.map(d => (
           <div key={d} className="text-center text-[11px] text-muted-foreground font-medium py-1">{d}</div>
         ))}
       </div>
-      {/* Day grid */}
       <div className="grid grid-cols-7 gap-y-1">
         {cells.map((day, i) => (
           <div key={i} className="flex items-center justify-center">
@@ -77,13 +74,9 @@ function CalendarPicker({ value, onChange, onClose }: {
               <button
                 onClick={() => selectDay(day)}
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-[13px] transition-colors hover:bg-muted ${
-                  isSelected(day)
-                    ? "text-white"
-                    : isToday(day)
-                    ? "border border-primary text-foreground"
-                    : "text-foreground"
+                  isSelected(day) ? "text-white" : isToday(day) ? "border border-primary text-foreground" : "text-foreground"
                 }`}
-                style={isSelected(day) ? { background: "linear-gradient(140deg,#3DBF00,#10441D)" } : undefined}
+                style={isSelected(day) ? { background: "var(--cta-gradient)" } : undefined}
               >
                 {day}
               </button>
@@ -118,15 +111,14 @@ function DateField({ label, value, onChange }: {
   }
 
   return (
-    <div className="flex-1 relative" ref={ref}>
-      <label className="text-muted-foreground text-[11px] block mb-1">{label}</label>
+    <div className="relative" ref={ref}>
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
         className={`flex items-center gap-2 w-full h-11 border rounded-lg px-3 text-left transition-colors bg-input-background ${open ? "border-primary ring-1 ring-primary/20" : "border-border"}`}
       >
         <Calendar size={16} className="text-muted-foreground flex-shrink-0" />
-        <span className={`text-[12px] truncate ${value ? "text-foreground" : "text-muted-foreground"}`}>
+        <span className={`text-[13px] truncate ${value ? "text-foreground" : "text-muted-foreground"}`}>
           {value ? fmt(value) : label}
         </span>
       </button>
@@ -141,27 +133,191 @@ function DateField({ label, value, onChange }: {
   );
 }
 
+// ─── Circular Slider ─────────────────────────────────────────────────────────
+
+function CircularSlider({
+  value,
+  onChange,
+  min = 2,
+  max = 20,
+}: {
+  value: number;
+  onChange: (v: number) => void;
+  min?: number;
+  max?: number;
+}) {
+  const svgRef = useRef<SVGSVGElement>(null);
+  const isDragging = useRef(false);
+
+  const SIZE = 240;
+  const CX = SIZE / 2;
+  const CY = SIZE / 2;
+  const RADIUS = 90;
+  const STROKE = 22;
+  const HANDLE_R = 16;
+  const START = 225;
+  const SWEEP = 270;
+
+  function polarToXY(deg: number) {
+    const rad = (deg - 90) * (Math.PI / 180);
+    return { x: CX + RADIUS * Math.cos(rad), y: CY + RADIUS * Math.sin(rad) };
+  }
+
+  function buildArc(fromDeg: number, toDeg: number) {
+    const s = polarToXY(fromDeg);
+    const e = polarToXY(toDeg);
+    const sweep = ((toDeg - fromDeg) % 360 + 360) % 360;
+    if (sweep < 0.5) return "";
+    const large = sweep > 180 ? 1 : 0;
+    return `M ${s.x.toFixed(2)} ${s.y.toFixed(2)} A ${RADIUS} ${RADIUS} 0 ${large} 1 ${e.x.toFixed(2)} ${e.y.toFixed(2)}`;
+  }
+
+  const progress = (value - min) / (max - min);
+  const currentDeg = START + progress * SWEEP;
+  const handleXY = polarToXY(currentDeg);
+  const trackPath = buildArc(START, START + SWEEP);
+  const fillPath = progress > 0.005 ? buildArc(START, currentDeg) : "";
+
+  function calcValue(e: React.PointerEvent<SVGSVGElement>): number {
+    if (!svgRef.current) return value;
+    const rect = svgRef.current.getBoundingClientRect();
+    const px = ((e.clientX - rect.left) / rect.width) * SIZE;
+    const py = ((e.clientY - rect.top) / rect.height) * SIZE;
+    const svgAngle = Math.atan2(py - CY, px - CX) * (180 / Math.PI);
+    let angle = svgAngle + 90;
+    if (angle < 0) angle += 360;
+    let rel = (angle - START + 360) % 360;
+    if (rel > SWEEP) {
+      rel = 360 - rel < rel - SWEEP ? 0 : SWEEP;
+    }
+    return Math.max(min, Math.min(max, Math.round(min + (rel / SWEEP) * (max - min))));
+  }
+
+  function onPointerDown(e: React.PointerEvent<SVGSVGElement>) {
+    isDragging.current = true;
+    (e.currentTarget as SVGSVGElement).setPointerCapture(e.pointerId);
+    onChange(calcValue(e));
+  }
+  function onPointerMove(e: React.PointerEvent<SVGSVGElement>) {
+    if (!isDragging.current) return;
+    onChange(calcValue(e));
+  }
+  function onPointerUp() { isDragging.current = false; }
+
+  return (
+    <div className="flex flex-col items-center gap-4">
+      <svg
+        ref={svgRef}
+        viewBox={`0 0 ${SIZE} ${SIZE}`}
+        className="w-[200px] h-[200px] touch-none select-none"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+      >
+        <path d={trackPath} fill="none" stroke="var(--color-border)" strokeWidth={STROKE} strokeLinecap="round" />
+        {fillPath && (
+          <path d={fillPath} fill="none" stroke="var(--color-primary)" strokeWidth={STROKE} strokeLinecap="round" />
+        )}
+        <circle
+          cx={handleXY.x}
+          cy={handleXY.y}
+          r={HANDLE_R}
+          fill="var(--color-foreground)"
+          stroke="white"
+          strokeWidth={3.5}
+          style={{ filter: "drop-shadow(0 3px 8px rgba(0,0,0,0.28))" }}
+        />
+        <text x={CX} y={CY - 4} textAnchor="middle" dominantBaseline="auto" fontSize="62" fontWeight="800" fill="var(--color-foreground)">
+          {value}
+        </text>
+        <text x={CX} y={CY + 26} textAnchor="middle" dominantBaseline="auto" fontSize="13" fontWeight="500" fill="var(--color-muted-foreground)">
+          people
+        </text>
+      </svg>
+
+      <div className="flex items-center gap-8">
+        <button
+          type="button"
+          onClick={() => onChange(Math.max(min, value - 1))}
+          aria-label="Decrease"
+          className="w-11 h-11 rounded-full border-2 border-border flex items-center justify-center text-[22px] font-light text-foreground hover:bg-muted active:scale-95 transition-all"
+        >
+          −
+        </button>
+        <span className="text-[12px] font-semibold text-muted-foreground uppercase tracking-wide">
+          {min} – {max} members
+        </span>
+        <button
+          type="button"
+          onClick={() => onChange(Math.min(max, value + 1))}
+          aria-label="Increase"
+          className="w-11 h-11 rounded-full border-2 border-border flex items-center justify-center text-[22px] font-light text-foreground hover:bg-muted active:scale-95 transition-all"
+        >
+          +
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Mock Users ───────────────────────────────────────────────────────────────
+
+interface TribeMember {
+  id: string;
+  name: string;
+  email: string;
+}
+
+const MOCK_USERS: TribeMember[] = [
+  { id: "1", name: "Thandi Dlamini",  email: "thandi.d@mail.com"  },
+  { id: "2", name: "Sipho Nkosi",     email: "sipho.n@mail.com"   },
+  { id: "3", name: "Lerato Mokoena",  email: "lerato.m@mail.com"  },
+  { id: "4", name: "Kabelo Sithole",  email: "kabelo.s@mail.com"  },
+  { id: "5", name: "Nomvula Khumalo", email: "nomvula.k@mail.com" },
+  { id: "6", name: "Bongani Zulu",    email: "bongani.z@mail.com" },
+  { id: "7", name: "Ayanda Ndlovu",   email: "ayanda.n@mail.com"  },
+  { id: "8", name: "Mpho Molefe",     email: "mpho.m@mail.com"    },
+];
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Step = 1 | 2 | 3;
+type Step = 1 | 2 | 3 | 4;
 
 interface TribeForm {
   name: string;
   size: number;
+  contribution: string;
   paymentPeriod: string;
-  amount: string;
   startDate: string;
   endDate: string;
-  coverImage: string | null;
-  members: string[];
-  notifications: {
-    changeInTurns: boolean;
-    messagesInWall: boolean;
-    completedCycle: boolean;
-    delayInCycle: boolean;
-    delayDays: string;
-    reportedMember: boolean;
-  };
+  members: TribeMember[];
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function calcEndDate(startDate: string, size: number, period: string): string {
+  if (!startDate || !period) return "";
+  const start = new Date(startDate + "T00:00:00");
+  const end = new Date(start);
+  switch (period) {
+    case "Weekly":   end.setDate(end.getDate() + size * 7);  break;
+    case "Biweekly": end.setDate(end.getDate() + size * 14); break;
+    case "Monthly":  end.setMonth(end.getMonth() + size);    break;
+  }
+  const y = end.getFullYear();
+  const m = String(end.getMonth() + 1).padStart(2, "0");
+  const d = String(end.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function fmtDate(v: string) {
+  if (!v) return "—";
+  return new Date(v + "T00:00:00").toLocaleDateString("en-ZA", { day: "numeric", month: "short", year: "numeric" });
+}
+
+function fmtAmount(v: number) {
+  return v.toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 // ─── Stepper ──────────────────────────────────────────────────────────────────
@@ -170,7 +326,7 @@ function StepCircle({ num, state }: { num: number; state: "done" | "active" | "i
   if (state === "done") {
     return (
       <div className="w-11 h-11 rounded-full flex items-center justify-center text-white text-[14px]"
-        style={{ background: "linear-gradient(180deg, #3DBF00 0%, #10441D 100%)" }}>
+        style={{ background: "var(--cta-gradient)" }}>
         {num}
       </div>
     );
@@ -195,9 +351,10 @@ function StepCircle({ num, state }: { num: number; state: "done" | "active" | "i
 
 function Stepper({ step }: { step: Step }) {
   const steps = [
-    { num: 1, label: "General"       },
-    { num: 2, label: "Members"       },
-    { num: 3, label: "Notifications" },
+    { num: 1, label: "Size"     },
+    { num: 2, label: "Schedule" },
+    { num: 3, label: "Members"  },
+    { num: 4, label: "Summary"  },
   ];
 
   function state(n: number): "done" | "active" | "idle" {
@@ -207,427 +364,446 @@ function Stepper({ step }: { step: Step }) {
   }
 
   return (
-    <div className="px-6 pt-2 pb-4">
-      <div className="flex items-center justify-between">
+    <div className="px-5 pt-2 pb-4">
+      <div className="flex items-start">
         {steps.map((s, i) => (
-          <div key={s.num} className="flex items-center flex-1">
-            <div className="flex flex-col items-center">
-              <StepCircle num={s.num} state={state(s.num)} />
+          <div key={s.num} className={`flex items-start ${i < steps.length - 1 ? "flex-1" : ""}`}>
+            <div className="flex flex-col items-center gap-1.5 shrink-0">
+              <div className="h-14 flex items-center justify-center">
+                <StepCircle num={s.num} state={state(s.num)} />
+              </div>
+              <span className="text-[11px] text-foreground text-center" style={{ fontWeight: step >= s.num ? 500 : 400 }}>
+                {s.label}
+              </span>
             </div>
             {i < steps.length - 1 && (
               <div
-                className="flex-1 mx-2 h-[2px] rounded-full"
-                style={{ backgroundColor: step > s.num ? "var(--color-primary)" : "var(--color-muted-foreground)", opacity: step > s.num ? 1 : 0.3 }}
+                className="flex-1 mx-1 h-[2px] rounded-full"
+                style={{
+                  marginTop: "28px",
+                  backgroundColor: step > s.num ? "var(--color-primary)" : "var(--color-muted-foreground)",
+                  opacity: step > s.num ? 1 : 0.3,
+                }}
               />
             )}
           </div>
         ))}
       </div>
-      <div className="flex justify-between mt-1 px-1">
-        {steps.map((s) => (
-          <span key={s.num} className="text-[12px] text-foreground" style={{ fontWeight: step >= s.num ? 500 : 400 }}>
-            {s.label}
-          </span>
-        ))}
-      </div>
     </div>
   );
 }
 
-// ─── Upload Image Modal ───────────────────────────────────────────────────────
+// ─── CTA Arrow ────────────────────────────────────────────────────────────────
 
-function UploadImageModal({ onClose, onConfirm, previewUrl, onImageSelected }: {
-  onClose: () => void;
-  onConfirm: () => void;
-  previewUrl: string | null;
-  onImageSelected: (url: string) => void;
-}) {
-  const fileRef = useRef<HTMLInputElement>(null);
-
-  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    onImageSelected(URL.createObjectURL(file));
-  }
-
+function ArrowRight() {
   return (
-    <div className="absolute inset-0 z-30 flex flex-col justify-end" style={{ background: "rgba(0,0,0,0.5)" }}>
-      <div className="w-full bg-card rounded-t-3xl p-6 space-y-4" style={{ minHeight: "55%" }}>
-        <div className="flex items-center justify-between mb-2">
-          <p className="font-semibold text-foreground text-[16px]">Upload cover image</p>
-          <button onClick={onClose} className="p-1">
-            <X size={20} className="text-foreground" />
-          </button>
-        </div>
-
-        {previewUrl ? (
-          <div className="relative rounded-lg overflow-hidden h-[200px]">
-            <img src={previewUrl} alt="Cover" className="w-full h-full object-cover rounded-lg" />
-          </div>
-        ) : (
-          <div
-            onClick={() => fileRef.current?.click()}
-            className="h-[200px] rounded-xl border-2 border-dashed border-border bg-muted/40 flex flex-col items-center justify-center gap-3 cursor-pointer hover:bg-muted/60 transition-colors"
-          >
-            <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-              <path d="M24 4C20.1 4 16.5 5.7 14 8.5C10.1 9.3 7 12.8 7 17C7 21.4 10.4 25 14.7 25H32.9C37.9 25 42 20.9 42 15.9C42 11.5 38.8 7.8 34.5 7.1C32.5 5.1 29.4 4 26.1 4H24ZM28 20V26H20V20H15L24 11L33 20H28Z" fill="var(--color-primary)" />
-              <path d="M8 32V40H40V32H36V36H12V32H8Z" fill="var(--color-primary)" />
-            </svg>
-            <p className="text-foreground text-[16px] text-center px-4">Tap here to upload your cover image</p>
-            <p className="text-muted-foreground text-[13px]">Support for single upload</p>
-          </div>
-        )}
-
-        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
-
-        <div className="flex gap-3 pt-2">
-          {previewUrl && (
-            <button
-              onClick={() => fileRef.current?.click()}
-              className="flex-1 h-[52px] rounded-xl border border-border flex items-center justify-center gap-2 text-foreground text-[14px] font-bold hover:bg-muted transition-colors"
-            >
-              <Upload size={18} className="rotate-180" />
-              Reupload
-            </button>
-          )}
-          <button
-            onClick={onConfirm}
-            className="flex-1 h-[52px] rounded-xl flex items-center justify-center gap-2 text-white text-[14px] font-semibold"
-            style={{ background: "linear-gradient(140deg, #3DBF00 0%, #34A300 100%)" }}
-          >
-            Confirm
-          </button>
-        </div>
-      </div>
-    </div>
+    <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+      <path d="M19 11.5H5.4" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+      <path d="M13 17.5L19 11.5L13 5.5" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+    </svg>
   );
 }
 
-// ─── Date auto-calculation ────────────────────────────────────────────────────
+// ─── Step 1: Tribe Size ──────────────────────────────────────────────────────
 
-function calcDates(size: number, period: string): { startDate: string; endDate: string } {
-  const toISO = (d: Date) => {
-    const y = d.getFullYear()
-    const m = String(d.getMonth() + 1).padStart(2, "0")
-    const day = String(d.getDate()).padStart(2, "0")
-    return `${y}-${m}-${day}`
-  }
-  const start = new Date()
-  const end = new Date(start)
-  switch (period) {
-    case "Weekly":    end.setDate(end.getDate() + size * 7);  break
-    case "Biweekly":  end.setDate(end.getDate() + size * 14); break
-    case "Monthly":   end.setMonth(end.getMonth() + size);     break
-    case "Quarterly": end.setMonth(end.getMonth() + size * 3); break
-  }
-  return { startDate: toISO(start), endDate: toISO(end) }
-}
-
-// ─── Step 1: General ──────────────────────────────────────────────────────────
-
-function StepGeneral({ form, setForm, onNext, onUpload }: {
+function StepTribeSize({ form, setForm, onNext }: {
   form: TribeForm;
   setForm: React.Dispatch<React.SetStateAction<TribeForm>>;
   onNext: () => void;
-  onUpload: () => void;
 }) {
-  const periods = ["Weekly", "Biweekly", "Monthly", "Quarterly"]
-
-  const periodLabel: Record<string, string> = {
-    Weekly:    "/ week",
-    Biweekly:  "/ 2 weeks",
-    Monthly:   "/ month",
-    Quarterly: "/ 3 months",
-  }
-
-  // Auto-calculate start + end dates whenever period or tribe size changes
-  useEffect(() => {
-    if (!form.paymentPeriod) return
-    const { startDate, endDate } = calcDates(form.size, form.paymentPeriod)
-    setForm(f => ({ ...f, startDate, endDate }))
-  }, [form.size, form.paymentPeriod, setForm])
-
-  const amountNum = parseFloat(form.amount)
-  const contributionPerMember =
-    form.amount && amountNum > 0 ? amountNum / form.size : null
+  const contributionNum = parseFloat(form.contribution);
+  const totalSaved = !isNaN(contributionNum) && contributionNum > 0 ? contributionNum * form.size : null;
+  const canContinue = form.size >= 2 && totalSaved !== null;
 
   return (
     <div className="flex-1 flex flex-col overflow-y-auto px-6 py-4 space-y-5">
-      {/* Tribe Name */}
-      <div>
-        <label className="text-foreground text-[14px] block mb-1.5">Tribe name</label>
-        <input
-          value={form.name}
-          onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-          placeholder="Enter tribe name"
-          className="w-full h-11 border border-border rounded-lg px-3 text-foreground text-[13px] placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 bg-input-background transition-colors"
+      {/* Total saved hero */}
+      <div className="flex flex-col items-center text-center min-h-[72px] justify-center">
+        {totalSaved !== null ? (
+          <>
+            <p className="text-muted-foreground text-[11px] uppercase tracking-widest font-semibold mb-1">
+              Total saved per participant
+            </p>
+            <p
+              className="text-[44px] font-extrabold leading-none tabular-nums"
+              style={{ background: "var(--cta-gradient)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}
+            >
+              R {fmtAmount(totalSaved)}
+            </p>
+          </>
+        ) : (
+          <p className="text-muted-foreground text-[13px]">
+            Set your tribe size and contribution to see total savings
+          </p>
+        )}
+      </div>
+
+      {/* Circular slider */}
+      <div className="flex flex-col items-center gap-1">
+        <label className="text-foreground text-[14px] font-medium self-start">Number of participants</label>
+        <CircularSlider
+          value={form.size}
+          onChange={(v) => setForm(f => ({ ...f, size: v }))}
+          min={2}
+          max={20}
         />
       </div>
 
-      {/* Tribe Size */}
+      {/* Individual contribution */}
       <div>
-        <label className="text-foreground text-[14px] block mb-1.5">Tribe size</label>
-        <div className="flex items-center gap-4">
-          <div className="flex-1">
-            <input
-              type="range"
-              min={2} max={20}
-              value={form.size}
-              onChange={(e) => setForm((f) => ({ ...f, size: Number(e.target.value) }))}
-              className="w-full accent-primary"
-            />
-          </div>
-          <span className="text-foreground text-[48px] font-semibold leading-none w-14 text-center tabular-nums">
-            {form.size}
+        <label className="text-foreground text-[14px] font-medium block mb-1.5">
+          Individual contribution per period
+        </label>
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-[14px] font-semibold select-none">
+            R
           </span>
-        </div>
-      </div>
-
-      {/* Period of Payments + Amount */}
-      <div className="flex gap-3">
-        <div className="flex-1">
-          <label className="text-foreground text-[14px] block mb-1.5">Period of payments</label>
-          <div className="relative">
-            <select
-              value={form.paymentPeriod}
-              onChange={(e) => setForm((f) => ({ ...f, paymentPeriod: e.target.value }))}
-              className="w-full h-11 border border-border rounded-lg px-3 text-foreground text-[12px] appearance-none bg-input-background outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-colors"
-            >
-              <option value="">Select a period</option>
-              {periods.map((p) => <option key={p} value={p}>{p}</option>)}
-            </select>
-            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/50 pointer-events-none" />
-          </div>
-        </div>
-        <div className="flex-1">
-          <label className="text-foreground text-[14px] block mb-1.5">Amount to receive</label>
           <input
-            value={form.amount}
-            onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
+            value={form.contribution}
+            onChange={(e) => setForm(f => ({ ...f, contribution: e.target.value }))}
             placeholder="0.00"
             type="number"
             min="0"
-            className="w-full h-11 border border-border rounded-lg px-3 text-foreground text-[12px] placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 bg-input-background transition-colors"
+            className="w-full h-11 border border-border rounded-lg pl-8 pr-3 text-foreground text-[14px] placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 bg-input-background transition-colors"
           />
         </div>
-      </div>
-
-      {/* Derived: contribution per member */}
-      {contributionPerMember !== null && (
-        <div className="flex items-center justify-between px-4 py-3 bg-primary/8 border border-primary/20 rounded-xl">
-          <div>
-            <p className="text-[11px] text-muted-foreground uppercase tracking-wide font-medium">
-              Each member contributes
-            </p>
-            <p className="text-primary font-bold text-[18px] leading-tight tabular-nums">
-              {contributionPerMember.toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              <span className="text-[12px] font-normal text-muted-foreground ml-1">
-                {form.paymentPeriod ? periodLabel[form.paymentPeriod] : "/ period"}
-              </span>
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="text-[11px] text-muted-foreground uppercase tracking-wide font-medium">
-              You receive
-            </p>
-            <p className="text-foreground font-bold text-[18px] leading-tight tabular-nums">
-              {amountNum.toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Period of Time */}
-      <div>
-        <label className="text-foreground text-[14px] block mb-1.5">Period of time</label>
-        <div className="flex gap-3">
-          <DateField label="Start" value={form.startDate} onChange={(v) => setForm((f) => ({ ...f, startDate: v }))} />
-          <DateField label="End"   value={form.endDate}   onChange={(v) => setForm((f) => ({ ...f, endDate:   v }))} />
-        </div>
-      </div>
-
-      {/* Upload cover image */}
-      <div>
-        {form.coverImage ? (
-          <div className="relative rounded-lg overflow-hidden h-[120px]">
-            <img src={form.coverImage} alt="Cover" className="w-full h-full object-cover rounded-lg" />
-            <button
-              onClick={onUpload}
-              className="absolute inset-0 bg-black/30 flex items-center justify-center gap-2 text-white text-[14px] font-bold"
-            >
-              <Upload size={18} className="rotate-180" /> Change image
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={onUpload}
-            className="w-full h-14 border-2 border-dashed border-border rounded-xl flex items-center justify-center gap-2 text-foreground text-[14px] font-bold hover:bg-muted transition-colors"
-          >
-            <Upload size={18} className="rotate-180" />
-            Upload a cover image
-          </button>
-        )}
+        <p className="text-muted-foreground text-[11px] mt-1">
+          Amount each member contributes per payment period
+        </p>
       </div>
 
       <div className="flex-1" />
 
       <button
         onClick={onNext}
-        className="w-full h-14 rounded-xl flex items-center justify-center gap-2 text-white text-[14px] font-semibold mt-4 hover:opacity-90 active:scale-[0.98] transition-all duration-150"
-        style={{ background: "linear-gradient(140deg, #3DBF00 0%, #34A300 100%)" }}
+        disabled={!canContinue}
+        className="w-full h-14 rounded-xl flex items-center justify-center gap-2 text-white text-[14px] font-semibold hover:opacity-90 active:scale-[0.98] transition-all duration-150 disabled:opacity-40"
+        style={{ background: "var(--cta-gradient)" }}
       >
-        Next
-        <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-          <path d="M19 11.5H5.4" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-          <path d="M13 17.5L19 11.5L13 5.5" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-        </svg>
+        Next <ArrowRight />
       </button>
     </div>
   );
 }
 
-// ─── Step 2: Members ──────────────────────────────────────────────────────────
+// ─── Step 2: Schedule ─────────────────────────────────────────────────────────
+
+const PERIODS = ["Weekly", "Biweekly", "Monthly"] as const;
+
+function StepSchedule({ form, setForm, onNext }: {
+  form: TribeForm;
+  setForm: React.Dispatch<React.SetStateAction<TribeForm>>;
+  onNext: () => void;
+}) {
+  useEffect(() => {
+    if (form.startDate && form.paymentPeriod) {
+      const end = calcEndDate(form.startDate, form.size, form.paymentPeriod);
+      setForm(f => ({ ...f, endDate: end }));
+    }
+  }, [form.startDate, form.paymentPeriod, form.size, setForm]);
+
+  const canContinue = !!form.paymentPeriod && !!form.startDate;
+
+  return (
+    <div className="flex-1 flex flex-col overflow-y-auto px-6 py-4 space-y-6">
+      {/* Payment period pills */}
+      <div>
+        <label className="text-foreground text-[14px] font-medium block mb-3">Payment period</label>
+        <div className="flex gap-2">
+          {PERIODS.map(p => (
+            <button
+              key={p}
+              onClick={() => setForm(f => ({ ...f, paymentPeriod: p }))}
+              className={`flex-1 h-11 rounded-full text-[13px] font-semibold transition-all ${
+                form.paymentPeriod === p
+                  ? "text-white"
+                  : "border border-border text-foreground hover:bg-muted"
+              }`}
+              style={form.paymentPeriod === p ? { background: "var(--cta-gradient)" } : undefined}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Start date */}
+      <div>
+        <label className="text-foreground text-[14px] font-medium block mb-1.5">Start date</label>
+        <DateField
+          label="Select start date"
+          value={form.startDate}
+          onChange={(v) => setForm(f => ({ ...f, startDate: v }))}
+        />
+      </div>
+
+      {/* End date — auto-calculated */}
+      {form.endDate && (
+        <div className="p-4 bg-muted/40 rounded-2xl border border-border">
+          <p className="text-muted-foreground text-[11px] uppercase tracking-widest font-semibold mb-1.5">
+            Tribe ends on
+          </p>
+          <div className="flex items-center gap-2 mb-1">
+            <Calendar size={18} className="text-primary flex-shrink-0" />
+            <p className="text-foreground font-bold text-[20px]">{fmtDate(form.endDate)}</p>
+          </div>
+          <p className="text-muted-foreground text-[12px]">
+            {form.size} rounds · {form.paymentPeriod.toLowerCase()} payments
+          </p>
+        </div>
+      )}
+
+      <div className="flex-1" />
+
+      <button
+        onClick={onNext}
+        disabled={!canContinue}
+        className="w-full h-14 rounded-xl flex items-center justify-center gap-2 text-white text-[14px] font-semibold hover:opacity-90 active:scale-[0.98] transition-all duration-150 disabled:opacity-40"
+        style={{ background: "var(--cta-gradient)" }}
+      >
+        Next <ArrowRight />
+      </button>
+    </div>
+  );
+}
+
+// ─── Step 3: Members ─────────────────────────────────────────────────────────
 
 function StepMembers({ form, setForm, onNext }: {
   form: TribeForm;
   setForm: React.Dispatch<React.SetStateAction<TribeForm>>;
   onNext: () => void;
 }) {
-  const slots = Array.from({ length: form.size }, (_, i) => i);
+  const [query, setQuery] = useState("");
 
-  function updateMember(i: number, val: string) {
-    setForm((f) => {
-      const members = [...f.members];
-      members[i] = val;
-      return { ...f, members };
-    });
+  const addedIds = new Set(form.members.map(m => m.id));
+  const results = query.trim().length > 1
+    ? MOCK_USERS.filter(u =>
+        !addedIds.has(u.id) && (
+          u.name.toLowerCase().includes(query.toLowerCase()) ||
+          u.email.toLowerCase().includes(query.toLowerCase())
+        )
+      )
+    : [];
+
+  const allFilled = form.members.length >= form.size;
+
+  function addMember(user: TribeMember) {
+    if (allFilled) return;
+    setForm(f => ({ ...f, members: [...f.members, user] }));
+    setQuery("");
+  }
+
+  function removeMember(id: string) {
+    setForm(f => ({ ...f, members: f.members.filter(m => m.id !== id) }));
   }
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
-      <p className="px-6 pt-4 pb-2 font-semibold text-foreground text-[16px]">Invite your tribe members</p>
+      {/* Header */}
+      <div className="px-6 pt-4 pb-3">
+        <p className="text-foreground font-semibold text-[16px]">Add tribe members</p>
+        <p className="text-muted-foreground text-[12px] mt-0.5">
+          {form.members.length} of {form.size} slots filled
+        </p>
+      </div>
 
-      <div className="flex-1 overflow-y-auto px-6 space-y-3 pb-4">
-        {slots.map((i) => {
-          const hasName = (form.members[i] ?? "").trim().length > 0;
-          return (
-            <div key={i} className="flex items-center gap-2">
-              {/* Number badge */}
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center text-[14px] flex-shrink-0 transition-colors ${
-                  hasName ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                }`}
+      {/* Search bar */}
+      <div className="px-6 mb-3">
+        <div className="relative">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+          <input
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Search by name or email…"
+            disabled={allFilled}
+            className="w-full h-11 border border-border rounded-lg pl-9 pr-9 text-foreground text-[13px] placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 bg-input-background transition-colors disabled:opacity-50"
+          />
+          {query.length > 0 && (
+            <button onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2">
+              <X size={14} className="text-muted-foreground" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Search results */}
+      {results.length > 0 && (
+        <div className="px-6 mb-3 space-y-2">
+          {results.map(user => (
+            <div key={user.id} className="flex items-center justify-between p-3 bg-card border border-border rounded-xl">
+              <div className="min-w-0 mr-3">
+                <p className="text-foreground text-[13px] font-semibold truncate">{user.name}</p>
+                <p className="text-muted-foreground text-[11px] truncate">{user.email}</p>
+              </div>
+              <button
+                onClick={() => addMember(user)}
+                className="h-9 px-3 rounded-lg text-white text-[12px] font-semibold flex-shrink-0 hover:opacity-90 active:scale-95 transition-all"
+                style={{ background: "var(--cta-gradient)" }}
               >
-                {i + 1}
+                Add {user.name}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {query.trim().length > 1 && results.length === 0 && (
+        <p className="px-6 text-muted-foreground text-[13px] text-center py-2 mb-2">No members found</p>
+      )}
+
+      {/* Member slots */}
+      <div className="flex-1 overflow-y-auto px-6 pb-4 space-y-2">
+        {Array.from({ length: form.size }, (_, i) => {
+          const member = form.members[i];
+          return (
+            <div key={i} className="flex items-center gap-3">
+              <div
+                className={`w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-semibold flex-shrink-0 ${member ? "text-white" : "bg-muted text-muted-foreground"}`}
+                style={member ? { background: "var(--cta-gradient)" } : undefined}
+              >
+                {member ? <Check size={16} /> : i + 1}
               </div>
-              {/* Email input */}
-              <div className="flex-1 h-11 border border-border rounded-lg flex items-center px-3 bg-input-background focus-within:border-primary focus-within:ring-1 focus-within:ring-primary/20 transition-colors">
-                <input
-                  value={form.members[i] || ""}
-                  onChange={(e) => updateMember(i, e.target.value)}
-                  placeholder="Type member name here"
-                  type="text"
-                  className="w-full text-foreground text-[12px] placeholder:text-muted-foreground outline-none bg-transparent"
-                />
-              </div>
-              {/* Conditional check */}
-              {hasName
-                ? <Check size={20} className="text-primary flex-shrink-0" />
-                : <div className="w-5 flex-shrink-0" />
-              }
+              {member ? (
+                <div className="flex-1 h-12 border border-primary/30 rounded-xl flex items-center justify-between px-3 bg-primary/5">
+                  <div className="min-w-0">
+                    <p className="text-foreground text-[13px] font-semibold truncate">{member.name}</p>
+                    <p className="text-muted-foreground text-[11px] truncate">{member.email}</p>
+                  </div>
+                  <button
+                    onClick={() => removeMember(member.id)}
+                    className="text-muted-foreground hover:text-foreground ml-2 flex-shrink-0 transition-colors"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex-1 h-12 border border-dashed border-border rounded-xl flex items-center px-3">
+                  <span className="text-muted-foreground text-[12px]">Empty slot</span>
+                </div>
+              )}
             </div>
           );
         })}
       </div>
 
+      {/* Continue */}
       <div className="px-6 pb-6 pt-2">
         <button
           onClick={onNext}
-          className="w-full h-14 rounded-xl flex items-center justify-center gap-2 text-white text-[14px] font-semibold hover:opacity-90 active:scale-[0.98] transition-all duration-150"
-          style={{ background: "linear-gradient(140deg, #3DBF00 0%, #34A300 100%)" }}
+          disabled={!allFilled}
+          className="w-full h-14 rounded-xl flex items-center justify-center gap-2 text-white text-[14px] font-semibold hover:opacity-90 active:scale-[0.98] transition-all duration-150 disabled:opacity-40"
+          style={{ background: "var(--cta-gradient)" }}
         >
-          Next
-          <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-            <path d="M19 11.5H5.4" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-            <path d="M13 17.5L19 11.5L13 5.5" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-          </svg>
+          Continue to summary <ArrowRight />
         </button>
       </div>
     </div>
   );
 }
 
-// ─── Toggle Row ───────────────────────────────────────────────────────────────
+// ─── Step 4: Summary ─────────────────────────────────────────────────────────
 
-function ToggleRow({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <div className="flex items-center gap-3">
-      <button
-        onClick={() => onChange(!checked)}
-        className="relative flex-shrink-0 w-[46px] h-[24px] rounded-full transition-colors duration-200"
-        style={{ backgroundColor: checked ? "var(--color-primary)" : "var(--color-switch-background)" }}
-      >
-        <div
-          className="absolute top-[3px] w-[18px] h-[18px] bg-white rounded-full shadow transition-transform duration-200"
-          style={{ left: checked ? "calc(100% - 21px)" : "3px" }}
-        />
-      </button>
-      <span className="text-foreground text-[14px]">{label}</span>
-    </div>
-  );
-}
-
-// ─── Step 3: Notifications ────────────────────────────────────────────────────
-
-function StepNotifications({ form, setForm, onPublish }: {
+function StepSummary({ form, setForm, onPublish }: {
   form: TribeForm;
   setForm: React.Dispatch<React.SetStateAction<TribeForm>>;
   onPublish: () => void;
 }) {
-  const { notifications: n } = form;
-  const set = (key: keyof typeof n, val: boolean | string) =>
-    setForm((f) => ({ ...f, notifications: { ...f.notifications, [key]: val } }));
+  const contributionNum = parseFloat(form.contribution) || 0;
+  const totalSaved = contributionNum * form.size;
 
   return (
-    <div className="flex-1 flex flex-col overflow-y-auto px-6 py-4 space-y-5">
-      <p className="font-semibold text-foreground text-[16px] leading-snug">
-        Decide how you want general<br />notifications in the tribe
-      </p>
+    <div className="flex-1 flex flex-col overflow-y-auto px-6 py-4 space-y-4">
+      <p className="font-semibold text-foreground text-[16px]">Review your tribe</p>
 
-      <ToggleRow label="Change in turns"       checked={n.changeInTurns}  onChange={(v) => set("changeInTurns",  v)} />
-      <ToggleRow label="Messages in the wall"  checked={n.messagesInWall} onChange={(v) => set("messagesInWall", v)} />
-      <ToggleRow label="A completed cycle"     checked={n.completedCycle} onChange={(v) => set("completedCycle", v)} />
-
-      <div className="space-y-2">
-        <ToggleRow label="Delay in cycle completion after" checked={n.delayInCycle} onChange={(v) => set("delayInCycle", v)} />
-        {n.delayInCycle && (
-          <div className="flex items-center gap-3 pl-14">
-            <input
-              value={n.delayDays}
-              onChange={(e) => set("delayDays", e.target.value)}
-              placeholder="Number of days"
-              type="number"
-              className="w-[127px] h-11 border border-border rounded-lg px-3 text-foreground text-[12px] placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 bg-input-background transition-colors"
-            />
-            <span className="text-foreground text-[14px]">days</span>
-          </div>
-        )}
+      {/* Tribe name */}
+      <div>
+        <label className="text-foreground text-[14px] font-medium block mb-1.5">Tribe name</label>
+        <input
+          value={form.name}
+          onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+          placeholder="Give your tribe a name"
+          className="w-full h-11 border border-border rounded-lg px-3 text-foreground text-[14px] placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 bg-input-background transition-colors"
+        />
       </div>
 
-      <ToggleRow label="Reported tribe member" checked={n.reportedMember} onChange={(v) => set("reportedMember", v)} />
+      {/* Financial summary */}
+      <div className="p-4 rounded-2xl border border-primary/20 bg-primary/5">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-muted-foreground text-[11px] uppercase tracking-widest font-semibold">Contribution</p>
+            <p className="text-foreground font-bold text-[20px] tabular-nums">R {fmtAmount(contributionNum)}</p>
+            <p className="text-muted-foreground text-[11px]">{form.paymentPeriod.toLowerCase()} · per member</p>
+          </div>
+          <div className="text-right">
+            <p className="text-muted-foreground text-[11px] uppercase tracking-widest font-semibold">Total saved</p>
+            <p
+              className="font-extrabold text-[24px] tabular-nums leading-tight"
+              style={{ background: "var(--cta-gradient)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}
+            >
+              R {fmtAmount(totalSaved)}
+            </p>
+            <p className="text-muted-foreground text-[11px]">per participant</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Participants */}
+      <div className="p-4 bg-muted/40 rounded-2xl">
+        <p className="text-muted-foreground text-[11px] uppercase tracking-widest font-semibold mb-1">Participants</p>
+        <p className="text-foreground font-bold text-[16px]">{form.size} members · {form.size} rounds</p>
+      </div>
+
+      {/* Schedule */}
+      <div className="p-4 bg-muted/40 rounded-2xl">
+        <p className="text-muted-foreground text-[11px] uppercase tracking-widest font-semibold mb-1">Schedule</p>
+        <p className="text-foreground font-bold text-[16px] mb-3">{form.paymentPeriod} payments</p>
+        <div className="flex gap-4 items-center">
+          <div>
+            <p className="text-muted-foreground text-[10px] uppercase tracking-wide">Starts</p>
+            <p className="text-foreground text-[13px] font-semibold">{fmtDate(form.startDate)}</p>
+          </div>
+          <div className="w-8 h-[2px] bg-border rounded-full" />
+          <div>
+            <p className="text-muted-foreground text-[10px] uppercase tracking-wide">Ends</p>
+            <p className="text-foreground text-[13px] font-semibold">{fmtDate(form.endDate)}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Members */}
+      <div className="p-4 bg-muted/40 rounded-2xl">
+        <p className="text-muted-foreground text-[11px] uppercase tracking-widest font-semibold mb-3">
+          Members ({form.members.length})
+        </p>
+        <div className="space-y-2.5">
+          {form.members.map((m, i) => (
+            <div key={m.id} className="flex items-center gap-2.5">
+              <div
+                className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] text-white font-bold flex-shrink-0"
+                style={{ background: "var(--cta-gradient)" }}
+              >
+                {i + 1}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-foreground text-[13px] font-semibold truncate">{m.name}</p>
+                <p className="text-muted-foreground text-[11px] truncate">{m.email}</p>
+              </div>
+              <Check size={15} className="text-primary flex-shrink-0" />
+            </div>
+          ))}
+        </div>
+      </div>
 
       <div className="flex-1" />
 
       <button
         onClick={onPublish}
-        className="w-full h-14 rounded-xl flex items-center justify-center gap-2 text-white text-[14px] font-semibold mt-4 hover:opacity-90 active:scale-[0.98] transition-all duration-150"
-        style={{ background: "linear-gradient(140deg, #3DBF00 0%, #34A300 100%)" }}
+        disabled={!form.name.trim()}
+        className="w-full h-14 rounded-xl flex items-center justify-center gap-2 text-white text-[14px] font-semibold mt-2 hover:opacity-90 active:scale-[0.98] transition-all duration-150 disabled:opacity-40"
+        style={{ background: "var(--cta-gradient)" }}
       >
-        Publish tribe
-        <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-          <path d="M19 11.5H5.4" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-          <path d="M13 17.5L19 11.5L13 5.5" stroke="white" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-        </svg>
+        Publish tribe <ArrowRight />
       </button>
     </div>
   );
@@ -638,32 +814,20 @@ function StepNotifications({ form, setForm, onPublish }: {
 export default function CreateTribe() {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>(1);
-  const [showUpload, setShowUpload] = useState(false);
-  const [pendingImage, setPendingImage] = useState<string | null>(null);
 
   const [form, setForm] = useState<TribeForm>({
     name: "",
     size: 4,
+    contribution: "",
     paymentPeriod: "",
-    amount: "",
     startDate: "",
     endDate: "",
-    coverImage: null,
     members: [],
-    notifications: {
-      changeInTurns: true,
-      messagesInWall: true,
-      completedCycle: true,
-      delayInCycle: false,
-      delayDays: "",
-      reportedMember: false,
-    },
   });
 
-  function handleBack()    { if (step === 1) navigate(-1); else setStep((s) => (s - 1) as Step); }
-  function handleNext()    { if (step < 3) setStep((s) => (s + 1) as Step); }
+  function handleBack() { if (step === 1) navigate(-1); else setStep(s => (s - 1) as Step); }
+  function handleNext() { if (step < 4) setStep(s => (s + 1) as Step); }
   function handlePublish() { navigate("/your-tribes"); }
-  function handleUploadConfirm() { setForm((f) => ({ ...f, coverImage: pendingImage })); setShowUpload(false); }
 
   return (
     <div className="min-h-screen bg-background flex items-start justify-center md:items-center md:py-8">
@@ -687,25 +851,11 @@ export default function CreateTribe() {
           <Stepper step={step} />
         </div>
 
-        {/* Content */}
-        {step === 1 && (
-          <StepGeneral
-            form={form} setForm={setForm} onNext={handleNext}
-            onUpload={() => { setPendingImage(form.coverImage); setShowUpload(true); }}
-          />
-        )}
-        {step === 2 && <StepMembers       form={form} setForm={setForm} onNext={handleNext} />}
-        {step === 3 && <StepNotifications form={form} setForm={setForm} onPublish={handlePublish} />}
-
-        {/* Upload modal */}
-        {showUpload && (
-          <UploadImageModal
-            onClose={() => setShowUpload(false)}
-            onConfirm={handleUploadConfirm}
-            previewUrl={pendingImage}
-            onImageSelected={setPendingImage}
-          />
-        )}
+        {/* Step content */}
+        {step === 1 && <StepTribeSize form={form} setForm={setForm} onNext={handleNext} />}
+        {step === 2 && <StepSchedule  form={form} setForm={setForm} onNext={handleNext} />}
+        {step === 3 && <StepMembers   form={form} setForm={setForm} onNext={handleNext} />}
+        {step === 4 && <StepSummary   form={form} setForm={setForm} onPublish={handlePublish} />}
       </div>
     </div>
   );
