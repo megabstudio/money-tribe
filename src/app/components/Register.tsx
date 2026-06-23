@@ -33,7 +33,7 @@ export default function Register() {
       <div className="bg-background min-h-screen w-full max-w-[390px] mx-auto flex flex-col items-center justify-center px-8 gap-6">
         <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-            <path d="M5 12l5 5L20 7" stroke="#38B000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M5 12l5 5L20 7" stroke="var(--color-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
         <p className="font-bold text-foreground text-xl text-center">Check your email</p>
@@ -44,9 +44,10 @@ export default function Register() {
         </p>
         <button
           onClick={() => navigate('/')}
-          className="h-14 w-full rounded-xl bg-secondary-action flex items-center justify-center hover:opacity-90 active:scale-[0.98] transition-all duration-150"
+          className="h-14 w-full rounded-xl flex items-center justify-center hover:opacity-90 active:scale-[0.98] transition-all duration-150"
+          style={{ background: 'var(--cta-gradient)' }}
         >
-          <span className="font-bold text-sm text-secondary-action-foreground">Back to Login</span>
+          <span className="font-bold text-sm text-white">Back to Login</span>
         </button>
       </div>
     )
@@ -133,7 +134,7 @@ export default function Register() {
         onClick={handleRegister}
         disabled={loading}
         className="h-14 w-full rounded-xl flex items-center justify-center hover:opacity-90 active:scale-[0.98] transition-all duration-150 disabled:opacity-60 mb-5"
-        style={{ background: 'linear-gradient(140deg, #3DBF00 0%, #34A300 100%)' }}
+        style={{ background: 'var(--cta-gradient)' }}
       >
         <span className="font-bold text-sm text-white">
           {loading ? 'Creating account…' : 'Register'}

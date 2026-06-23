@@ -26,7 +26,7 @@ export default function ForgotPassword() {
       <div className="bg-background min-h-screen w-full max-w-[390px] mx-auto flex flex-col items-center justify-center px-8 gap-6">
         <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-            <path d="M3 8l9 6 9-6M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke="#38B000" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M3 8l9 6 9-6M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
         <p className="font-bold text-foreground text-xl text-center">Reset link sent</p>
@@ -36,7 +36,7 @@ export default function ForgotPassword() {
         <button
           onClick={() => navigate('/')}
           className="h-14 w-full rounded-xl flex items-center justify-center hover:opacity-90 active:scale-[0.98] transition-all duration-150"
-          style={{ background: 'linear-gradient(140deg, #3DBF00 0%, #34A300 100%)' }}
+          style={{ background: 'var(--cta-gradient)' }}
         >
           <span className="font-bold text-sm text-white">Back to Login</span>
         </button>
@@ -82,7 +82,7 @@ export default function ForgotPassword() {
         onClick={handleReset}
         disabled={loading}
         className="h-14 w-full rounded-xl flex items-center justify-center hover:opacity-90 active:scale-[0.98] transition-all duration-150 disabled:opacity-60"
-        style={{ background: 'linear-gradient(140deg, #3DBF00 0%, #34A300 100%)' }}
+        style={{ background: 'var(--cta-gradient)' }}
       >
         <span className="font-bold text-sm text-white">
           {loading ? 'Sending…' : 'Reset password'}

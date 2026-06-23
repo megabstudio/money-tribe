@@ -14,11 +14,11 @@ interface Tribe {
 }
 
 const MY_TRIBES: Tribe[] = [
-  { id: 1, name: "Vacation Fund",   saved: 4200,  goal: 6000,  cashDate: "Jun 15, 2025", endDate: "Dec 31, 2025", currentRound: 4, totalRounds: 6,  accentColor: "#38B000" },
-  { id: 2, name: "Emergency Stash", saved: 2800,  goal: 5000,  cashDate: "Jul 1, 2025",  endDate: "Jan 15, 2026", currentRound: 3, totalRounds: 5,  accentColor: "#2E7D32" },
-  { id: 3, name: "New Car Fund",    saved: 12000, goal: 20000, cashDate: "Dec 31, 2025", endDate: "Jun 30, 2026", currentRound: 6, totalRounds: 10, accentColor: "#1B5E20" },
-  { id: 4, name: "Home Deposit",    saved: 8000,  goal: 15000, cashDate: "Mar 1, 2026",  endDate: "Sep 1, 2026",  currentRound: 5, totalRounds: 8,  accentColor: "#38B000" },
-  { id: 5, name: "Tech Upgrade",    saved: 3500,  goal: 5000,  cashDate: "Aug 15, 2025", endDate: "Nov 30, 2025", currentRound: 4, totalRounds: 5,  accentColor: "#2E7D32" },
+  { id: 1, name: "Vacation Fund",   saved: 4200,  goal: 6000,  cashDate: "Jun 15, 2025", endDate: "Dec 31, 2025", currentRound: 4, totalRounds: 6,  accentColor: "#3dbf00" },
+  { id: 2, name: "Emergency Stash", saved: 2800,  goal: 5000,  cashDate: "Jul 1, 2025",  endDate: "Jan 15, 2026", currentRound: 3, totalRounds: 5,  accentColor: "#2a8a00" },
+  { id: 3, name: "New Car Fund",    saved: 12000, goal: 20000, cashDate: "Dec 31, 2025", endDate: "Jun 30, 2026", currentRound: 6, totalRounds: 10, accentColor: "#10451d" },
+  { id: 4, name: "Home Deposit",    saved: 8000,  goal: 15000, cashDate: "Mar 1, 2026",  endDate: "Sep 1, 2026",  currentRound: 5, totalRounds: 8,  accentColor: "#3dbf00" },
+  { id: 5, name: "Tech Upgrade",    saved: 3500,  goal: 5000,  cashDate: "Aug 15, 2025", endDate: "Nov 30, 2025", currentRound: 4, totalRounds: 5,  accentColor: "#2a8a00" },
 ]
 
 function TribeCard({ tribe, onClick }: { tribe: Tribe; onClick: () => void }) {
@@ -139,7 +139,7 @@ export default function YourTribes() {
               <button
                 onClick={() => navigate('/dashboard')}
                 className="h-12 px-6 rounded-xl flex items-center justify-center hover:opacity-90 active:scale-[0.98] transition-all duration-150"
-                style={{ background: 'linear-gradient(140deg, #3DBF00 0%, #34A300 100%)' }}
+                style={{ background: 'var(--cta-gradient)' }}
               >
                 <span className="font-semibold text-sm text-white">Find a tribe</span>
               </button>

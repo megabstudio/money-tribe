@@ -34,7 +34,7 @@ export default function Login() {
         <div className="size-[72px]">
           <svg className="block size-full" fill="none" viewBox="0 0 72 72">
             <g clipPath="url(#login-clip)">
-              <path clipRule="evenodd" d={svgPaths.p362e71f0} fill="#38B000" fillRule="evenodd" />
+              <path clipRule="evenodd" d={svgPaths.p362e71f0} fill="var(--color-primary)" fillRule="evenodd" />
             </g>
             <defs>
               <clipPath id="login-clip"><rect fill="white" height="72" width="72" /></clipPath>
@@ -102,7 +102,7 @@ export default function Login() {
         onClick={handleLogin}
         disabled={loading}
         className="h-14 w-full rounded-xl flex items-center justify-center hover:opacity-90 active:scale-[0.98] transition-all duration-150 disabled:opacity-60 mb-5"
-        style={{ background: 'linear-gradient(140deg, #3DBF00 0%, #34A300 100%)' }}
+        style={{ background: 'var(--cta-gradient)' }}
       >
         <span className="font-bold text-sm text-white">
           {loading ? 'Signing in…' : 'Login'}

@@ -6,6 +6,8 @@ import Dashboard from './components/Dashboard'
 import YourTribes from './components/YourTribes'
 import TribeDetail from './components/TribeDetail'
 import CreateTribe from './components/CreateTribe'
+import Messages from './components/Messages'
+import FindTribe from './components/FindTribe'
 import ProtectedRoute from './components/ProtectedRoute'
 
 export const router = createBrowserRouter([
@@ -50,6 +52,22 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <CreateTribe />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/messages',
+    element: (
+      <ProtectedRoute>
+        <Messages />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/find-tribe',
+    element: (
+      <ProtectedRoute>
+        <FindTribe />
       </ProtectedRoute>
     ),
   },
