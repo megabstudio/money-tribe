@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
+import { Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../../lib/auth'
 import svgPaths from '../../imports/Login/svg-grybny3axk'
 
@@ -33,17 +34,14 @@ export default function Login() {
         <div className="size-[72px]">
           <svg className="block size-full" fill="none" viewBox="0 0 72 72">
             <g clipPath="url(#login-clip)">
-              <path clipRule="evenodd" d={svgPaths.p362e71f0} fill="#38B000" fillRule="evenodd" />
+              <path clipRule="evenodd" d={svgPaths.p362e71f0} fill="var(--color-primary)" fillRule="evenodd" />
             </g>
             <defs>
               <clipPath id="login-clip"><rect fill="white" height="72" width="72" /></clipPath>
             </defs>
           </svg>
         </div>
-        <div className="text-foreground text-2xl font-medium text-center mt-2 leading-8">
-          <p>Money</p>
-          <p>Tribe</p>
-        </div>
+        <p className="text-foreground text-3xl font-bold text-center mt-2 tracking-tight">Money Tribe</p>
       </div>
 
       {/* Email */}
@@ -78,11 +76,10 @@ export default function Login() {
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-[10px] size-6 text-muted-foreground hover:text-foreground transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
-            <svg fill="none" viewBox="0 0 24 24" className="size-full">
-              <path clipRule="evenodd" d={svgPaths.p38fc4600} fillRule="evenodd" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-            </svg>
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
           </button>
         </div>
       </div>
@@ -92,7 +89,7 @@ export default function Login() {
       <div className="flex justify-end mt-3">
         <button
           onClick={() => navigate('/forgot-password')}
-          className="text-foreground text-sm hover:text-primary transition-colors"
+          className="text-primary text-sm font-medium hover:underline underline-offset-2 transition-colors"
         >
           Forgot password?
         </button>
@@ -105,22 +102,22 @@ export default function Login() {
         onClick={handleLogin}
         disabled={loading}
         className="h-14 w-full rounded-xl flex items-center justify-center hover:opacity-90 active:scale-[0.98] transition-all duration-150 disabled:opacity-60 mb-5"
-        style={{ background: 'linear-gradient(140deg, #3DBF00 0%, #34A300 100%)' }}
+        style={{ background: 'var(--cta-gradient)' }}
       >
         <span className="font-bold text-sm text-white">
           {loading ? 'Signing in…' : 'Login'}
         </span>
       </button>
 
-      <p className="text-foreground text-sm text-center mb-3">Don't have an account?</p>
-
-      {/* Register CTA */}
-      <button
-        onClick={() => navigate('/register')}
-        className="h-14 w-full rounded-xl bg-secondary-action flex items-center justify-center hover:opacity-90 active:scale-[0.98] transition-all duration-150"
-      >
-        <span className="font-bold text-sm text-secondary-action-foreground">Register</span>
-      </button>
+      <p className="text-foreground text-sm text-center">
+        Don't have an account?{' '}
+        <button
+          onClick={() => navigate('/register')}
+          className="text-primary font-semibold hover:underline underline-offset-2 transition-colors"
+        >
+          Register
+        </button>
+      </p>
     </div>
   )
 }

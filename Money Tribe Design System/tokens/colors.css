@@ -1,0 +1,134 @@
+/* ── Money Tribe — Color tokens ──────────────────────────────────────
+   Extracted from the Money Tribe Figma elements file.
+   Brand greens span vivid lime → deep forest; neutrals are warm-cool grays. */
+
+:root {
+  /* ── Brand green ramp ── */
+  --green-50:  #eafbe3;
+  --green-100: #d7f0dd;  /* Figma "light green" button fill */
+  --green-200: #b9ec9c;
+  --green-300: #92e06a;
+  --green-400: #5cd624;  /* Figma "green" button fill */
+  --green-500: #3dbf00;  /* primary brand green (most-used stroke/text) */
+  --green-600: #38b000;  /* logo mark green */
+  --green-700: #2a8a00;
+  --green-800: #10451d;  /* wordmark green */
+  --green-900: #0d2700;  /* "dark green" — text / deepest surface */
+
+  /* ── Neutral ramp ── */
+  --neutral-0:   #ffffff;
+  --neutral-50:  #f6f8f6;
+  --neutral-100: #eef1ee;
+  --neutral-200: #e1e1e1;  /* Figma border gray */
+  --neutral-300: #d9d9d9;  /* Figma fill gray */
+  --neutral-400: #b8bcb8;
+  --neutral-500: #999999;  /* Figma muted stroke/text */
+  --neutral-600: #6c726c;
+  --neutral-700: #444944;
+  --neutral-800: #2c2c2c;  /* Figma dark fill */
+  --neutral-900: #121512;
+  --neutral-1000:#000000;
+
+  /* ── Semantic state colors (brand-tuned) ── */
+  --red-500:    #e5484d;
+  --amber-500:  #f5a524;
+  --blue-500:   #2a7de1;
+
+  /* ──────────────────────────────────────────────────────────────────
+     Semantic aliases — the names components actually reference.
+     Shadcn/Radix-style surface + foreground pairs. */
+  --background:            var(--neutral-0);
+  --foreground:            var(--green-900);
+
+  --surface-card:          var(--neutral-0);
+  --surface-card-foreground:var(--green-900);
+  --surface-popover:       var(--neutral-0);
+  --surface-muted:         var(--neutral-50);
+
+  --primary:               var(--green-500);
+  --primary-hover:         var(--green-600);
+  --primary-active:        var(--green-700);
+  --primary-foreground:    var(--neutral-0);
+
+  --secondary:             var(--green-100);
+  --secondary-hover:       #c7e8cf;
+  --secondary-foreground:  var(--green-900);
+
+  --accent:                var(--green-400);
+  --accent-foreground:     var(--green-900);
+
+  --muted:                 var(--neutral-100);
+  --muted-foreground:      var(--neutral-600);
+
+  --destructive:           var(--red-500);
+  --destructive-foreground:var(--neutral-0);
+
+  --text-body:             var(--green-900);
+  --text-subtle:           var(--neutral-600);
+  --text-disabled:         var(--neutral-500);
+  --surface-disabled:      var(--neutral-300);
+  --text-on-brand:         var(--neutral-0);
+
+  --border:                var(--neutral-200);
+  --border-strong:         var(--neutral-300);
+  --input:                 var(--neutral-200);
+  --ring:                  var(--green-500);
+
+  --overlay:               rgba(13, 39, 0, 0.45);
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   DARK THEME
+   Set <html data-theme="dark"> (or [data-theme="light"] to force light).
+   Only the SEMANTIC aliases are remapped — base ramps stay constant so
+   component code never changes between themes.
+   ════════════════════════════════════════════════════════════════════ */
+:root[data-theme="dark"] {
+  /* Dark forest surfaces — green-tinted, never pure black */
+  --background:            #0e2b0d;
+  --foreground:            #eaf6e6;
+
+  --surface-card:          #163a14;
+  --surface-card-foreground:#eaf6e6;
+  --surface-popover:       #1b4318;
+  --surface-muted:         #123410;
+
+  /* Brand greens glow brighter on dark */
+  --primary:               var(--green-400);
+  --primary-hover:         #6fe038;
+  --primary-active:        var(--green-300);
+  --primary-foreground:    var(--green-900);
+
+  --secondary:             #214b1b;
+  --secondary-hover:       #2b5e22;
+  --secondary-foreground:  #d7f0dd;
+
+  --accent:                var(--green-400);
+  --accent-foreground:     var(--green-900);
+
+  --muted:                 #1d441a;
+  --muted-foreground:      #a6c79c;
+
+  --destructive:           #ff6166;
+  --destructive-foreground:#0e2b0d;
+
+  --text-body:             #eaf6e6;
+  --text-subtle:           #a6c79c;
+  --text-disabled:         #647a5b;
+  --surface-disabled:      #213d1d;
+  --text-on-brand:         var(--green-900);
+
+  --border:                #2c4f25;
+  --border-strong:         #3e6735;
+  --input:                 #34592c;
+  --ring:                  var(--green-400);
+
+  --overlay:               rgba(7, 23, 4, 0.66);
+}
+
+/* OS-level auto dark: handled in JS, not CSS, so tokens stay registered to
+   clean scopes. Apps that want it can run, before first paint:
+     const m = matchMedia('(prefers-color-scheme: dark)');
+     const sync = () => document.documentElement.dataset.theme = m.matches ? 'dark' : 'light';
+     sync(); m.addEventListener('change', sync);
+   (See IMPLEMENTATION.md §3.) */

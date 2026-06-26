@@ -1,0 +1,24 @@
+<!-- @dsCard group="Colors" viewport="700x190" name="Brand green ramp" subtitle="Lime → forest. --green-50 … --green-900" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; padding: 20px; background: var(--background); font-family: var(--font-sans); }
+  .row { display: flex; gap: 10px; }
+  .sw { flex: 1; }
+  .chip { height: 84px; border-radius: var(--radius-md); border: 1px solid var(--border); }
+  .name { font-size: 11px; font-weight: 700; color: var(--text-body); margin-top: 8px; }
+  .hex { font-size: 11px; color: var(--text-subtle); font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+  <div class="row" id="ramp"></div>
+  <script>
+    const greens = [["50","#eafbe3"],["100","#d7f0dd"],["200","#b9ec9c"],["300","#92e06a"],["400","#5cd624"],["500","#3dbf00"],["600","#38b000"],["700","#2a8a00"],["800","#10451d"],["900","#0d2700"]];
+    document.getElementById("ramp").innerHTML = greens.map(([k,hex]) =>
+      `<div class="sw"><div class="chip" style="background:${hex}"></div><div class="name">${k}</div><div class="hex">${hex}</div></div>`).join("");
+  </script>
+</body>
+</html>

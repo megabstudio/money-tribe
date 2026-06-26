@@ -1,0 +1,24 @@
+<!-- @dsCard group="Colors" viewport="700x190" name="Neutral ramp" subtitle="Warm-cool grays. --neutral-0 … --neutral-1000" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; padding: 20px; background: var(--background); font-family: var(--font-sans); }
+  .row { display: flex; gap: 8px; }
+  .sw { flex: 1; }
+  .chip { height: 84px; border-radius: var(--radius-md); border: 1px solid var(--border); }
+  .name { font-size: 11px; font-weight: 700; color: var(--text-body); margin-top: 8px; }
+  .hex { font-size: 10px; color: var(--text-subtle); font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+  <div class="row" id="ramp"></div>
+  <script>
+    const n = [["0","#ffffff"],["50","#f6f8f6"],["100","#eef1ee"],["200","#e1e1e1"],["300","#d9d9d9"],["400","#b8bcb8"],["500","#999999"],["600","#6c726c"],["700","#444944"],["800","#2c2c2c"],["900","#121512"],["1000","#000000"]];
+    document.getElementById("ramp").innerHTML = n.map(([k,hex]) =>
+      `<div class="sw"><div class="chip" style="background:${hex}"></div><div class="name">${k}</div><div class="hex">${hex}</div></div>`).join("");
+  </script>
+</body>
+</html>

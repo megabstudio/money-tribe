@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../../lib/auth'
-import svgPaths from '../../imports/Register/svg-h6k2gx0s0q'
 
 export default function Register() {
   const navigate = useNavigate()
@@ -34,7 +33,7 @@ export default function Register() {
       <div className="bg-background min-h-screen w-full max-w-[390px] mx-auto flex flex-col items-center justify-center px-8 gap-6">
         <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-            <path d="M5 12l5 5L20 7" stroke="#38B000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M5 12l5 5L20 7" stroke="var(--color-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
         <p className="font-bold text-foreground text-xl text-center">Check your email</p>
@@ -45,9 +44,10 @@ export default function Register() {
         </p>
         <button
           onClick={() => navigate('/')}
-          className="h-14 w-full rounded-xl bg-secondary-action flex items-center justify-center hover:opacity-90 active:scale-[0.98] transition-all duration-150"
+          className="h-14 w-full rounded-xl flex items-center justify-center hover:opacity-90 active:scale-[0.98] transition-all duration-150"
+          style={{ background: 'var(--cta-gradient)' }}
         >
-          <span className="font-bold text-sm text-secondary-action-foreground">Back to Login</span>
+          <span className="font-bold text-sm text-white">Back to Login</span>
         </button>
       </div>
     )
@@ -57,11 +57,10 @@ export default function Register() {
     <button
       type="button"
       onClick={toggle}
-      className="absolute right-3 top-[10px] size-6 text-muted-foreground hover:text-foreground transition-colors"
+      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+      aria-label={show ? 'Hide password' : 'Show password'}
     >
-      <svg fill="none" viewBox="0 0 24 24" className="size-full">
-        <path clipRule="evenodd" d={svgPaths.p38fc4600} fillRule="evenodd" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
-      </svg>
+      {show ? <EyeOff size={18} /> : <Eye size={18} />}
     </button>
   )
 
@@ -78,7 +77,7 @@ export default function Register() {
 
       {/* Title */}
       <h1 className="font-bold text-foreground text-2xl leading-tight mb-8">
-        Create<br />a new account
+        Create a new account
       </h1>
 
       {/* Email */}
@@ -135,21 +134,22 @@ export default function Register() {
         onClick={handleRegister}
         disabled={loading}
         className="h-14 w-full rounded-xl flex items-center justify-center hover:opacity-90 active:scale-[0.98] transition-all duration-150 disabled:opacity-60 mb-5"
-        style={{ background: 'linear-gradient(140deg, #3DBF00 0%, #34A300 100%)' }}
+        style={{ background: 'var(--cta-gradient)' }}
       >
         <span className="font-bold text-sm text-white">
           {loading ? 'Creating account…' : 'Register'}
         </span>
       </button>
 
-      <p className="text-foreground text-sm text-center mb-3">Already have an account?</p>
-
-      <button
-        onClick={() => navigate('/')}
-        className="h-14 w-full rounded-xl bg-secondary-action flex items-center justify-center hover:opacity-90 active:scale-[0.98] transition-all duration-150"
-      >
-        <span className="font-bold text-sm text-secondary-action-foreground">Login</span>
-      </button>
+      <p className="text-foreground text-sm text-center">
+        Already have an account?{' '}
+        <button
+          onClick={() => navigate('/')}
+          className="text-primary font-semibold hover:underline underline-offset-2 transition-colors"
+        >
+          Login
+        </button>
+      </p>
     </div>
   )
 }

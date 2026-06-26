@@ -1,0 +1,22 @@
+<!-- @dsCard group="Colors" viewport="700x150" name="Semantic — dark" subtitle="Same roles, data-theme='dark'" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; padding: 20px; background: var(--background); font-family: var(--font-sans); }
+  .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+  .chip { height: 56px; border-radius: var(--radius-md); border: 1px solid var(--border); display:flex; align-items:flex-end; padding:6px; }
+  .name { font-size: 10px; font-weight: 700; margin-top: 6px; color: var(--text-body); }
+</style>
+</head>
+<body>
+  <div class="grid" id="g"></div>
+  <script>
+    const roles = [["primary","var(--primary)","var(--primary-foreground)"],["secondary","var(--secondary)","var(--secondary-foreground)"],["accent","var(--accent)","var(--accent-foreground)"],["muted","var(--muted)","var(--muted-foreground)"],["destructive","var(--destructive)","var(--destructive-foreground)"],["card","var(--surface-card)","var(--text-body)"]];
+    document.getElementById("g").innerHTML = roles.map(([n,bg,fg]) =>
+      `<div><div class="chip" style="background:${bg};color:${fg};font-size:11px;font-weight:700">Aa</div><div class="name">${n}</div></div>`).join("");
+  </script>
+</body>
+</html>

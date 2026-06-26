@@ -1,0 +1,24 @@
+<!-- @dsCard group="Spacing" viewport="700x170" name="Spacing scale" subtitle="4px base grid · --space-1 … --space-12" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; padding: 24px; background: var(--background); font-family: var(--font-sans); }
+  .row { display: flex; align-items: flex-end; gap: 14px; }
+  .item { text-align: center; }
+  .bar { background: var(--green-400); border-radius: var(--radius-xs); width: 100%; }
+  .lab { font-size: 10px; color: var(--text-subtle); margin-top: 8px; font-weight: 600; }
+  .px { font-size: 10px; color: var(--text-body); font-weight: 700; }
+</style>
+</head>
+<body>
+  <div class="row" id="r"></div>
+  <script>
+    const sp = [["1",4],["2",8],["3",12],["4",16],["5",20],["6",24],["8",32],["10",40],["12",48]];
+    document.getElementById("r").innerHTML = sp.map(([k,px]) =>
+      `<div class="item" style="width:${px}px"><div class="bar" style="height:${px}px"></div><div class="px">${px}</div><div class="lab">${k}</div></div>`).join("");
+  </script>
+</body>
+</html>

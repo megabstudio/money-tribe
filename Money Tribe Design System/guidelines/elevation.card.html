@@ -1,0 +1,23 @@
+<!-- @dsCard group="Spacing" viewport="700x180" name="Elevation" subtitle="Forest-tinted shadows · xs → xl" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { margin: 0; padding: 28px; background: var(--surface-muted); font-family: var(--font-sans); }
+  .row { display: flex; gap: 26px; }
+  .item { text-align: center; }
+  .box { width: 96px; height: 64px; background: var(--surface-card); border-radius: var(--radius-lg); }
+  .lab { font-size: 11px; color: var(--text-body); margin-top: 12px; font-weight: 700; }
+</style>
+</head>
+<body>
+  <div class="row" id="r"></div>
+  <script>
+    const sh = ["xs","sm","md","lg","xl"];
+    document.getElementById("r").innerHTML = sh.map(k =>
+      `<div class="item"><div class="box" style="box-shadow:var(--shadow-${k})"></div><div class="lab">shadow-${k}</div></div>`).join("");
+  </script>
+</body>
+</html>
