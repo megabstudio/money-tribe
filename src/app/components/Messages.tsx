@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { Bell, Home, MessageCircle, User, Plus, Search, MessageSquare } from "lucide-react";
+import { Compass, Home, MessageCircle, User, Plus, Search, MessageSquare } from "lucide-react";
 
 type DateFilter = "all" | "today" | "week" | "month";
-type NavTab = "home" | "messages" | "notifications" | "user";
+type NavTab = "home" | "messages" | "find" | "user";
 
 interface TribeMessage {
   id: number;
@@ -123,8 +123,8 @@ const NAV_ITEMS_LEFT: { id: NavTab; Icon: typeof Home; label: string }[] = [
   { id: "messages", Icon: MessageCircle, label: "Messages" },
 ];
 const NAV_ITEMS_RIGHT: { id: NavTab; Icon: typeof Home; label: string }[] = [
-  { id: "notifications", Icon: Bell, label: "Alerts"  },
-  { id: "user",          Icon: User, label: "Profile" },
+  { id: "find", Icon: Compass, label: "Find"    },
+  { id: "user", Icon: User,    label: "Profile" },
 ];
 
 export default function Messages() {
@@ -133,6 +133,7 @@ export default function Messages() {
 
   const handleNavClick = (id: NavTab) => {
     if (id === "home") navigate("/dashboard");
+    if (id === "find") navigate("/find-tribe");
   };
 
   const filtered = MESSAGES.filter((msg) => {
@@ -297,9 +298,6 @@ export default function Messages() {
                 >
                   <span className="relative">
                     <Icon size={20} className={isActive ? "text-primary" : "text-muted-foreground"} />
-                    {id === "notifications" && (
-                      <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-destructive border-2 border-card" />
-                    )}
                   </span>
                   <span className={`text-[10px] font-semibold transition-colors ${isActive ? "text-primary" : "text-muted-foreground"}`}>
                     {label}

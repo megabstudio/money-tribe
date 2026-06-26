@@ -1460,8 +1460,8 @@ export default function TribeDetail() {
                 className="flex-1 h-[4px] rounded-full"
                 style={{
                   backgroundColor: i < tribe.paidOut
-                    ? "rgba(255,255,255,0.75)"
-                    : "rgba(255,255,255,0.18)",
+                    ? "rgba(185, 236, 156, 0.72)"
+                    : "rgba(255,255,255,0.15)",
                 }}
               />
             ))}

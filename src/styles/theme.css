@@ -153,48 +153,48 @@
 
 /* ── Dark theme ─────────────────────────────────────────────────────── */
 [data-theme="dark"] {
-  --background:            #0e2b0d;
-  --foreground:            #eaf6e6;
-  --card:                  #163a14;
-  --card-foreground:       #eaf6e6;
-  --popover:               #1b4318;
-  --popover-foreground:    #eaf6e6;
-  --primary:               var(--green-400);   /* #5cd624 — glows on dark */
+  --background:            #0c0c0c;
+  --foreground:            #f0f0f0;
+  --card:                  #161616;
+  --card-foreground:       #f0f0f0;
+  --popover:               #1e1e1e;
+  --popover-foreground:    #f0f0f0;
+  --primary:               var(--green-400);   /* #5cd624 — pops on black */
   --primary-hover:         #6fe038;
-  --primary-active:        var(--green-500);   /* #3dbf00 — gradient goes darker */
-  --primary-foreground:    var(--green-900);   /* dark text on bright CTA */
-  --secondary:             #214b1b;
-  --secondary-foreground:  #d7f0dd;
-  --secondary-action:      #4dbf6a;
-  --secondary-action-foreground: #0e2b0d;
-  --muted:                 #1d441a;
-  --muted-foreground:      #a6c79c;
-  --accent:                #1d441a;
-  --accent-foreground:     #eaf6e6;
+  --primary-active:        var(--green-500);
+  --primary-foreground:    #0c0c0c;            /* black text on bright green CTA */
+  --secondary:             #1e1e1e;
+  --secondary-foreground:  #d0d0d0;
+  --secondary-action:      var(--green-400);
+  --secondary-action-foreground: #0c0c0c;
+  --muted:                 #1a1a1a;
+  --muted-foreground:      #888888;
+  --accent:                #1e1e1e;
+  --accent-foreground:     #f0f0f0;
   --destructive:           #ff6166;
-  --destructive-foreground:#0e2b0d;
+  --destructive-foreground:#0c0c0c;
   --warning:               #f59e0b;
   --warning-foreground:    #1c0e00;
-  --border:                #2c4f25;
-  --input:                 #34592c;
-  --input-background:      #1d441a;
-  --switch-background:     #3a6e48;
+  --border:                #2a2a2a;
+  --input:                 #2a2a2a;
+  --input-background:      #1a1a1a;
+  --switch-background:     #3a3a3a;
   --ring:                  var(--green-400);
-  --overlay:               rgba(7, 23, 4, 0.66);
+  --overlay:               rgba(0, 0, 0, 0.72);
   --cta-gradient:          linear-gradient(140deg, var(--green-400) 0%, var(--green-500) 100%);
-  --sidebar:               #163a14;
-  --sidebar-foreground:    #eaf6e6;
+  --sidebar:               #141414;
+  --sidebar-foreground:    #f0f0f0;
   --sidebar-primary:       var(--green-400);
-  --sidebar-primary-foreground: var(--green-900);
-  --sidebar-accent:        #1d441a;
-  --sidebar-accent-foreground: #eaf6e6;
-  --sidebar-border:        #2c4f25;
+  --sidebar-primary-foreground: #0c0c0c;
+  --sidebar-accent:        #1e1e1e;
+  --sidebar-accent-foreground: #f0f0f0;
+  --sidebar-border:        #2a2a2a;
   --sidebar-ring:          var(--green-400);
   --chart-1: var(--green-400);
   --chart-2: #6ede8a;
   --chart-3: #91bd9c;
   --chart-4: var(--green-700);
-  --chart-5: #43a047;
+  --chart-5: #555555;
 }
 
 /* ── Tailwind 4 @theme inline ────────────────────────────────────────── */

@@ -39,7 +39,7 @@ function TribeCard({ tribe, onClick }: { tribe: Tribe; onClick: () => void }) {
       className="w-full text-left bg-card border border-border rounded-2xl overflow-hidden active:scale-[0.98] transition-transform"
       style={cardStyle}
     >
-      <div className="h-[3px]" style={{ background: "var(--cta-gradient)" }} />
+      <div className="h-[3px]" style={{ background: "linear-gradient(90deg, #b9ec9c 0%, #92e06a 100%)" }} />
 
       <div className="p-4">
         {/* Name row */}
@@ -123,7 +123,7 @@ function TribeCard({ tribe, onClick }: { tribe: Tribe; onClick: () => void }) {
                   className="flex-1 h-1.5 rounded-full"
                   style={
                     i < (tribe.filledSlots ?? 0)
-                      ? { background: "var(--cta-gradient)" }
+                      ? { backgroundColor: "#1a4500" }
                       : { backgroundColor: "var(--color-border, hsl(var(--border)))" }
                   }
                 />
@@ -159,7 +159,7 @@ function TribeCard({ tribe, onClick }: { tribe: Tribe; onClick: () => void }) {
                   className="flex-1 h-1.5 rounded-full"
                   style={
                     i < tribe.currentRound
-                      ? { background: "var(--cta-gradient)" }
+                      ? { backgroundColor: "#1a4500" }
                       : { backgroundColor: "var(--color-border, hsl(var(--border)))" }
                   }
                 />
