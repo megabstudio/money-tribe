@@ -13,6 +13,11 @@ interface Tribe {
   name: string;
   emoji: string;
   accentColor: string;
+  isCreator?: boolean;
+  status?: "open" | "starting_soon" | "active" | "closed";
+  filledSlots?: number;
+  totalSlots?: number;
+  startDate?: string;
   currentRound: number;
   totalRounds: number;
   cashDate: string;
@@ -32,7 +37,8 @@ const MY_TRIBES: Tribe[] = [
   },
   {
     id: 3, name: "New Car Fund", emoji: "🚗", accentColor: "#10451d",
-    currentRound: 6, totalRounds: 10, cashDate: "Dec 31, 2025", endDate: "Dec 31, 2026",
+    isCreator: true, status: "starting_soon", filledSlots: 10, totalSlots: 10, startDate: "Jul 1, 2025",
+    currentRound: 0, totalRounds: 10, cashDate: "Dec 31, 2025", endDate: "Dec 31, 2026",
   },
 ];
 
@@ -57,52 +63,158 @@ function MoneyTribeLogo({ size = 34 }: { size?: number }) {
 // ─── Tribe Card ───────────────────────────────────────────────────────────────
 
 function TribeCard({ tribe, onClick }: { tribe: Tribe; onClick: () => void }) {
+  const isOpen         = tribe.isCreator && tribe.status === "open";
+  const isStartingSoon = tribe.isCreator && tribe.status === "starting_soon";
+  const emptySlots     = isOpen ? (tribe.totalSlots ?? 0) - (tribe.filledSlots ?? 0) : 0;
+
+  const cardStyle = isOpen
+    ? { boxShadow: "0 6px 28px rgba(34, 197, 94, 0.22)" }
+    : {};
+
   return (
-    <div
+    <button
       onClick={onClick}
-      className="w-full flex bg-card border border-border rounded-2xl overflow-hidden cursor-pointer active:scale-[0.99] transition-transform"
+      className="w-full text-left bg-card border border-border rounded-2xl overflow-hidden active:scale-[0.98] transition-transform"
+      style={cardStyle}
     >
-      {/* Left: solid gradient thumbnail */}
-      <div
-        className="w-[68px] flex-shrink-0 flex items-center justify-center"
-        style={{ background: `linear-gradient(160deg, ${tribe.accentColor}cc, ${tribe.accentColor}55)` }}
-      >
-        <span className="text-[30px]">{tribe.emoji}</span>
+      <div className="h-[3px]" style={{ background: "var(--cta-gradient)" }} />
+
+      <div className="p-4">
+        {/* Name + status badge */}
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[20px] flex-shrink-0 bg-primary/10">
+              {tribe.emoji}
+            </div>
+            <div className="min-w-0">
+              <p className="text-foreground font-bold text-[15px] leading-tight truncate">{tribe.name}</p>
+              <p className="text-muted-foreground text-[11px]">
+                {(isOpen || isStartingSoon)
+                  ? `${tribe.filledSlots} of ${tribe.totalSlots} members`
+                  : `${tribe.totalRounds} rounds total`}
+              </p>
+            </div>
+          </div>
+
+          {isOpen && (
+            <span className="flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              OPEN
+            </span>
+          )}
+          {!isOpen && !isStartingSoon && (
+            <span
+              className="flex-shrink-0 px-2.5 py-1 rounded-full text-white text-[11px] font-bold"
+              style={{ background: "var(--cta-gradient)" }}
+            >
+              Rnd {tribe.currentRound}/{tribe.totalRounds}
+            </span>
+          )}
+        </div>
+
+        {isOpen && (
+          <>
+            <div className="flex flex-wrap gap-[5px] mb-3">
+              {Array.from({ length: tribe.totalSlots ?? 0 }).map((_, i) => (
+                <div
+                  key={i}
+                  className={`w-6 h-6 rounded-full border-[1.5px] flex items-center justify-center transition-colors ${
+                    i < (tribe.filledSlots ?? 0)
+                      ? "bg-emerald-500 border-emerald-500"
+                      : "bg-transparent border-dashed border-border"
+                  }`}
+                >
+                  {i < (tribe.filledSlots ?? 0) && (
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                      <circle cx="5" cy="3.5" r="2" fill="white" />
+                      <path d="M1 9c0-2.2 1.8-4 4-4s4 1.8 4 4" stroke="white" strokeWidth="1.2" strokeLinecap="round" fill="none" />
+                    </svg>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-[12px] text-muted-foreground">
+                <span className="font-semibold text-foreground">{emptySlots}</span> slot{emptySlots !== 1 ? "s" : ""} still open
+              </span>
+              <div className="flex items-center gap-0.5 text-emerald-600 dark:text-emerald-400 text-[12px] font-semibold">
+                Invite <ChevronRight size={13} />
+              </div>
+            </div>
+          </>
+        )}
+
+        {isStartingSoon && (
+          <>
+            <div className="flex items-center flex-wrap gap-1.5 mb-3">
+              <span className="px-2 py-0.5 bg-muted rounded-md text-foreground text-[12px] font-semibold">
+                {tribe.totalSlots} members
+              </span>
+              <span className="px-2 py-0.5 rounded-md text-[12px] font-semibold text-primary bg-primary/10">
+                Starting soon
+              </span>
+            </div>
+            <div className="flex gap-[3px] mb-3">
+              {Array.from({ length: tribe.totalSlots ?? 0 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex-1 h-1.5 rounded-full"
+                  style={
+                    i < (tribe.filledSlots ?? 0)
+                      ? { background: "var(--cta-gradient)" }
+                      : { backgroundColor: "var(--color-border, hsl(var(--border)))" }
+                  }
+                />
+              ))}
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <Calendar size={12} />
+                <span className="text-[12px]">Starts {tribe.startDate}</span>
+              </div>
+              <div className="flex items-center gap-0.5 text-primary text-[12px] font-semibold">
+                View <ChevronRight size={13} />
+              </div>
+            </div>
+          </>
+        )}
+
+        {!isOpen && !isStartingSoon && (
+          <>
+            <div className="flex items-center gap-1.5 mb-3">
+              <span className="px-2 py-0.5 bg-muted rounded-md text-foreground text-[12px] font-semibold">
+                Cash {tribe.cashDate}
+              </span>
+              <span className="px-2 py-0.5 bg-muted rounded-md text-muted-foreground text-[12px]">
+                Ends {tribe.endDate}
+              </span>
+            </div>
+            <div className="flex gap-[3px] mb-3">
+              {Array.from({ length: tribe.totalRounds }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex-1 h-1.5 rounded-full"
+                  style={
+                    i < tribe.currentRound
+                      ? { background: "var(--cta-gradient)" }
+                      : { backgroundColor: "var(--color-border, hsl(var(--border)))" }
+                  }
+                />
+              ))}
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-muted-foreground">
+                <Calendar size={12} />
+                <span className="text-[12px]">Next cash {tribe.cashDate}</span>
+              </div>
+              <div className="flex items-center gap-0.5 text-primary text-[12px] font-semibold">
+                View <ChevronRight size={13} />
+              </div>
+            </div>
+          </>
+        )}
       </div>
-
-      {/* Right: content + segmented bar */}
-      <div className="flex-1 min-w-0 flex flex-col px-3.5 pt-3 pb-3">
-        <div className="flex items-start justify-between gap-2">
-          <p className="text-foreground font-bold text-[14px] leading-snug truncate">{tribe.name}</p>
-          <ChevronRight size={14} className="text-border flex-shrink-0 mt-0.5" />
-        </div>
-
-        <p className="text-muted-foreground text-[11px] mt-0.5">
-          Round{" "}
-          <span className="font-semibold" style={{ color: tribe.accentColor }}>
-            {tribe.currentRound}
-          </span>{" "}
-          of {tribe.totalRounds}
-        </p>
-
-        <div className="flex items-center gap-1.5 mt-1">
-          <span className="text-[10px] text-muted-foreground">Cash {tribe.cashDate}</span>
-          <span className="text-[10px] text-border">·</span>
-          <span className="text-[10px] text-muted-foreground">Ends {tribe.endDate}</span>
-        </div>
-
-        {/* Segmented round progress bar */}
-        <div className="flex gap-[3px] mt-2.5">
-          {Array.from({ length: tribe.totalRounds }).map((_, i) => (
-            <div
-              key={i}
-              className="h-[4px] flex-1 rounded-full"
-              style={{ backgroundColor: i < tribe.currentRound ? tribe.accentColor : `${tribe.accentColor}28` }}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
+    </button>
   );
 }
 

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { ArrowLeft, MoreVertical, Check, Search, X, ChevronLeft, ChevronRight, Calendar } from "lucide-react";
+import { ArrowLeft, MoreVertical, Check, Search, X, ChevronLeft, ChevronRight, Calendar, Plus, Camera } from "lucide-react";
 
 // ─── Calendar Picker ──────────────────────────────────────────────────────────
 
@@ -286,6 +286,7 @@ type Step = 1 | 2 | 3 | 4;
 
 interface TribeForm {
   name: string;
+  coverImage: string | null;
   size: number;
   contribution: string;
   paymentPeriod: string;
@@ -423,24 +424,83 @@ function StepTribeSize({ form, setForm, onNext }: {
   setForm: React.Dispatch<React.SetStateAction<TribeForm>>;
   onNext: () => void;
 }) {
+  const coverInputRef = useRef<HTMLInputElement>(null);
   const contributionNum = parseFloat(form.contribution);
   const totalSaved = !isNaN(contributionNum) && contributionNum > 0 ? contributionNum * form.size : null;
-  const canContinue = form.size >= 2 && totalSaved !== null;
+  const canContinue = !!form.name.trim() && form.size >= 2 && totalSaved !== null;
+
+  function handleCoverChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setForm(f => ({ ...f, coverImage: url }));
+  }
 
   return (
     <div className="flex-1 flex flex-col overflow-y-auto px-6 py-4 space-y-5">
+      {/* Cover photo */}
+      <div>
+        <label className="text-foreground text-[14px] font-medium block mb-1.5">Cover photo</label>
+        <button
+          type="button"
+          onClick={() => coverInputRef.current?.click()}
+          className="w-full h-[108px] rounded-2xl relative overflow-hidden flex flex-col items-center justify-center gap-1.5 transition-colors"
+          style={
+            form.coverImage
+              ? { border: "none" }
+              : { border: "2px dashed var(--color-border)" }
+          }
+        >
+          {form.coverImage ? (
+            <>
+              <img src={form.coverImage} alt="Cover" className="absolute inset-0 w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-black/35 flex items-center justify-center">
+                <div className="flex items-center gap-1.5 text-white text-[12px] font-semibold bg-black/30 px-3 py-1.5 rounded-full">
+                  <Camera size={13} />
+                  Change photo
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <Camera size={20} className="text-muted-foreground" />
+              <span className="text-muted-foreground text-[12px] font-medium">Add cover photo</span>
+              <span className="text-muted-foreground text-[11px] opacity-60">Tap to upload</span>
+            </>
+          )}
+        </button>
+        <input
+          ref={coverInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleCoverChange}
+        />
+      </div>
+
+      {/* Tribe name */}
+      <div>
+        <label className="text-foreground text-[14px] font-medium block mb-1.5">Tribe name</label>
+        <input
+          value={form.name}
+          onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+          placeholder="Give your tribe a name"
+          className="w-full h-11 border border-border rounded-lg px-3 text-foreground text-[14px] placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 bg-input-background transition-colors"
+        />
+      </div>
+
       {/* Total saved hero */}
-      <div className="flex flex-col items-center text-center min-h-[72px] justify-center">
+      <div className="flex flex-col items-center text-center min-h-[64px] justify-center">
         {totalSaved !== null ? (
           <>
             <p className="text-muted-foreground text-[11px] uppercase tracking-widest font-semibold mb-1">
               Total saved per participant
             </p>
             <p
-              className="text-[44px] font-extrabold leading-none tabular-nums"
+              className="text-[40px] font-extrabold leading-none tabular-nums"
               style={{ background: "var(--cta-gradient)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}
             >
-              R {fmtAmount(totalSaved)}
+              RD$ {fmtAmount(totalSaved)}
             </p>
           </>
         ) : (
@@ -468,7 +528,7 @@ function StepTribeSize({ form, setForm, onNext }: {
         </label>
         <div className="relative">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-[14px] font-semibold select-none">
-            R
+            RD$
           </span>
           <input
             value={form.contribution}
@@ -476,7 +536,7 @@ function StepTribeSize({ form, setForm, onNext }: {
             placeholder="0.00"
             type="number"
             min="0"
-            className="w-full h-11 border border-border rounded-lg pl-8 pr-3 text-foreground text-[14px] placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 bg-input-background transition-colors"
+            className="w-full h-11 border border-border rounded-lg pl-12 pr-3 text-foreground text-[14px] placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 bg-input-background transition-colors"
           />
         </div>
         <p className="text-muted-foreground text-[11px] mt-1">
@@ -484,16 +544,6 @@ function StepTribeSize({ form, setForm, onNext }: {
         </p>
       </div>
 
-      <div className="flex-1" />
-
-      <button
-        onClick={onNext}
-        disabled={!canContinue}
-        className="w-full h-14 rounded-xl flex items-center justify-center gap-2 text-white text-[14px] font-semibold hover:opacity-90 active:scale-[0.98] transition-all duration-150 disabled:opacity-40"
-        style={{ background: "var(--cta-gradient)" }}
-      >
-        Next <ArrowRight />
-      </button>
     </div>
   );
 }
@@ -565,16 +615,6 @@ function StepSchedule({ form, setForm, onNext }: {
         </div>
       )}
 
-      <div className="flex-1" />
-
-      <button
-        onClick={onNext}
-        disabled={!canContinue}
-        className="w-full h-14 rounded-xl flex items-center justify-center gap-2 text-white text-[14px] font-semibold hover:opacity-90 active:scale-[0.98] transition-all duration-150 disabled:opacity-40"
-        style={{ background: "var(--cta-gradient)" }}
-      >
-        Next <ArrowRight />
-      </button>
     </div>
   );
 }
@@ -780,10 +820,11 @@ function StepMembers({ form, setForm, onNext }: {
                   </div>
                   <button
                     onClick={() => addMember(user)}
-                    className="h-9 px-3 rounded-lg text-white text-[12px] font-semibold flex-shrink-0 hover:opacity-90 active:scale-95 transition-all"
+                    className="h-9 px-3 rounded-lg text-white text-[12px] font-semibold flex-shrink-0 hover:opacity-90 active:scale-95 transition-all flex items-center gap-1"
                     style={{ background: "var(--cta-gradient)" }}
                   >
-                    Add {user.name}
+                    <Plus size={13} />
+                    Add
                   </button>
                 </div>
               ))}
@@ -855,17 +896,6 @@ function StepMembers({ form, setForm, onNext }: {
         </>
       )}
 
-      {/* Continue */}
-      <div className="px-6 pb-6 pt-2">
-        <button
-          onClick={onNext}
-          disabled={!form.isOpen && !allFilled}
-          className="w-full h-14 rounded-xl flex items-center justify-center gap-2 text-white text-[14px] font-semibold hover:opacity-90 active:scale-[0.98] transition-all duration-150 disabled:opacity-40"
-          style={{ background: "var(--cta-gradient)" }}
-        >
-          Continue to summary <ArrowRight />
-        </button>
-      </div>
     </div>
   );
 }
@@ -882,17 +912,31 @@ function StepSummary({ form, setForm, onPublish }: {
 
   return (
     <div className="flex-1 flex flex-col overflow-y-auto px-6 py-4 space-y-4">
-      <p className="font-semibold text-foreground text-[16px]">Review your tribe</p>
-
-      {/* Tribe name */}
-      <div>
-        <label className="text-foreground text-[14px] font-medium block mb-1.5">Tribe name</label>
-        <input
-          value={form.name}
-          onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-          placeholder="Give your tribe a name"
-          className="w-full h-11 border border-border rounded-lg px-3 text-foreground text-[14px] placeholder:text-muted-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 bg-input-background transition-colors"
-        />
+      {/* Hero cover — full bleed, name overlaid */}
+      <div className="-mx-6 -mt-4">
+        {form.coverImage ? (
+          <div className="h-[164px] relative">
+            <img src={form.coverImage} alt="Cover" className="w-full h-full object-cover" />
+            <div
+              className="absolute inset-0"
+              style={{ background: "linear-gradient(to top, rgba(0,0,0,0.72) 0%, transparent 55%)" }}
+            />
+            <div className="absolute bottom-0 left-0 right-0 px-6 pb-4">
+              <p className="text-white/60 text-[10px] uppercase tracking-widest font-semibold">Tribe name</p>
+              <p className="font-bold text-white text-[22px] leading-tight mt-0.5">{form.name}</p>
+            </div>
+          </div>
+        ) : (
+          <div
+            className="h-[120px] flex items-end px-6 pb-4"
+            style={{ background: "var(--cta-gradient)" }}
+          >
+            <div>
+              <p className="text-white/70 text-[10px] uppercase tracking-widest font-semibold">Tribe name</p>
+              <p className="font-bold text-white text-[22px] leading-tight mt-0.5">{form.name}</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Financial summary */}
@@ -900,7 +944,7 @@ function StepSummary({ form, setForm, onPublish }: {
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-muted-foreground text-[11px] uppercase tracking-widest font-semibold">Contribution</p>
-            <p className="text-foreground font-bold text-[20px] tabular-nums">R {fmtAmount(contributionNum)}</p>
+            <p className="text-foreground font-bold text-[20px] tabular-nums">RD$ {fmtAmount(contributionNum)}</p>
             <p className="text-muted-foreground text-[11px]">{form.paymentPeriod.toLowerCase()} · per member</p>
           </div>
           <div className="text-right">
@@ -909,7 +953,7 @@ function StepSummary({ form, setForm, onPublish }: {
               className="font-extrabold text-[24px] tabular-nums leading-tight"
               style={{ background: "var(--cta-gradient)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}
             >
-              R {fmtAmount(totalSaved)}
+              RD$ {fmtAmount(totalSaved)}
             </p>
             <p className="text-muted-foreground text-[11px]">per participant</p>
           </div>
@@ -979,16 +1023,6 @@ function StepSummary({ form, setForm, onPublish }: {
         )}
       </div>
 
-      <div className="flex-1" />
-
-      <button
-        onClick={onPublish}
-        disabled={!form.name.trim()}
-        className="w-full h-14 rounded-xl flex items-center justify-center gap-2 text-white text-[14px] font-semibold mt-2 hover:opacity-90 active:scale-[0.98] transition-all duration-150 disabled:opacity-40"
-        style={{ background: "var(--cta-gradient)" }}
-      >
-        Publish tribe <ArrowRight />
-      </button>
     </div>
   );
 }
@@ -1002,6 +1036,7 @@ export default function CreateTribe() {
 
   const [form, setForm] = useState<TribeForm>({
     name: "",
+    coverImage: null,
     size: 4,
     contribution: "",
     paymentPeriod: "",
@@ -1021,6 +1056,19 @@ export default function CreateTribe() {
   }
   function handleStepClick(n: Step) { setStep(n); }
   function handlePublish() { navigate("/your-tribes"); }
+
+  const contributionNum = parseFloat(form.contribution);
+  const totalSaved = !isNaN(contributionNum) && contributionNum > 0 ? contributionNum * form.size : null;
+
+  const buttonLabel =
+    step === 4 ? "Publish tribe" :
+    step === 3 ? "Continue to summary" :
+    "Next";
+  const buttonDisabled =
+    step === 1 ? (!form.name.trim() || form.size < 2 || totalSaved === null) :
+    step === 2 ? (!form.paymentPeriod || !form.startDate) :
+    false;
+  const buttonAction = step === 4 ? handlePublish : handleNext;
 
   return (
     <div className="min-h-screen bg-background flex items-start justify-center md:items-center md:py-8">
@@ -1044,11 +1092,25 @@ export default function CreateTribe() {
           <Stepper step={step} maxStep={maxStep} onStepClick={handleStepClick} />
         </div>
 
-        {/* Step content */}
-        {step === 1 && <StepTribeSize form={form} setForm={setForm} onNext={handleNext} />}
-        {step === 2 && <StepSchedule  form={form} setForm={setForm} onNext={handleNext} />}
-        {step === 3 && <StepMembers   form={form} setForm={setForm} onNext={handleNext} />}
-        {step === 4 && <StepSummary   form={form} setForm={setForm} onPublish={handlePublish} />}
+        {/* Step content — scrolls freely */}
+        <div className="flex-1 overflow-hidden flex flex-col">
+          {step === 1 && <StepTribeSize form={form} setForm={setForm} onNext={handleNext} />}
+          {step === 2 && <StepSchedule  form={form} setForm={setForm} onNext={handleNext} />}
+          {step === 3 && <StepMembers   form={form} setForm={setForm} onNext={handleNext} />}
+          {step === 4 && <StepSummary   form={form} setForm={setForm} onPublish={handlePublish} />}
+        </div>
+
+        {/* Fixed bottom button */}
+        <div className="flex-shrink-0 px-6 pb-8 pt-3 bg-background border-t border-border">
+          <button
+            onClick={buttonAction}
+            disabled={buttonDisabled}
+            className="w-full h-14 rounded-xl flex items-center justify-center gap-2 text-white text-[14px] font-semibold hover:opacity-90 active:scale-[0.98] transition-all duration-150 disabled:opacity-40"
+            style={{ background: "var(--cta-gradient)" }}
+          >
+            {buttonLabel} <ArrowRight />
+          </button>
+        </div>
       </div>
     </div>
   );

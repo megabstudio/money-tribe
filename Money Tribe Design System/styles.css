@@ -1,0 +1,28 @@
+/* ════════════════════════════════════════════════════════════════════
+   Money Tribe — Design System
+   Global stylesheet entry point. Consumers link THIS file only.
+   Keep this file as @import lines (plus a tiny base reset). No tokens here.
+   ════════════════════════════════════════════════════════════════════ */
+
+@import "tokens/fonts.css";
+@import "tokens/colors.css";
+@import "tokens/typography.css";
+@import "tokens/spacing.css";
+@import "tokens/radius.css";
+
+/* ── Minimal base reset / page defaults ── */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--text-body);
+  background: var(--background);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4, h5, h6 { margin: 0; font-weight: var(--weight-bold); line-height: var(--leading-tight); }
+p { margin: 0; }

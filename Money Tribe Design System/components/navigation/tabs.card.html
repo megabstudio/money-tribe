@@ -1,0 +1,56 @@
+<!-- @dsCard group="Components" viewport="700x300" name="Tabs" subtitle="Underline & pill (segmented) variants" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<link rel="stylesheet" href="../../styles.css" />
+<style>
+  body { margin: 0; padding: 22px; background: var(--background); font-family: var(--font-sans); color: var(--text-body); }
+  .toggle { position: fixed; top: 14px; right: 14px; font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: var(--radius-pill); border: 1.5px solid var(--border); background: var(--surface-card); color: var(--text-body); cursor: pointer; }
+  .block { margin-bottom: 26px; }
+  .p { font-size: 14px; color: var(--text-subtle); }
+</style>
+</head>
+<body>
+  <button class="toggle" onclick="document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark')">◑ theme</button>
+  <div id="root"></div>
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script src="../../_ds_bundle.js"></script>
+  <script type="text/babel">
+    const { Tabs, TabsList, TabsTrigger, TabsContent } = window.MoneyTribeDesignSystem_5369ed;
+    function Demo() {
+      return (
+        <div>
+          <div className="block">
+            <Tabs defaultValue="save" variant="underline">
+              <TabsList>
+                <TabsTrigger value="save">Save</TabsTrigger>
+                <TabsTrigger value="spend">Spend</TabsTrigger>
+                <TabsTrigger value="tribe">Tribe</TabsTrigger>
+              </TabsList>
+              <TabsContent value="save"><p className="p">Your pots are on track — £4,200 saved.</p></TabsContent>
+              <TabsContent value="spend"><p className="p">£312 spent this week on the shared card.</p></TabsContent>
+              <TabsContent value="tribe"><p className="p">6 members · saving toward a house deposit.</p></TabsContent>
+            </Tabs>
+          </div>
+          <div className="block">
+            <Tabs defaultValue="week" variant="pill">
+              <TabsList>
+                <TabsTrigger value="week">Week</TabsTrigger>
+                <TabsTrigger value="month">Month</TabsTrigger>
+                <TabsTrigger value="year">Year</TabsTrigger>
+              </TabsList>
+              <TabsContent value="week"><p className="p">7-day view</p></TabsContent>
+              <TabsContent value="month"><p className="p">30-day view</p></TabsContent>
+              <TabsContent value="year"><p className="p">12-month view</p></TabsContent>
+            </Tabs>
+          </div>
+        </div>
+      );
+    }
+    ReactDOM.createRoot(document.getElementById("root")).render(<Demo/>);
+  </script>
+</body>
+</html>

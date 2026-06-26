@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router";
 import {
-  ArrowLeft, MoreVertical,
+  ArrowLeft, Pencil,
   RefreshCw, Calendar, Send, X, ChevronDown, ChevronRight, CheckCircle, MessageCircle,
+  Mail, Phone, MapPin, Briefcase, Users,
 } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -37,6 +38,19 @@ interface WallPost {
   replies: WallReply[];
 }
 
+interface JoinRequest {
+  id: number;
+  name: string;
+  initials: string;
+  email: string;
+  phone: string;
+  location: string;
+  occupation: string;
+  requestedSlot: number;
+  requestedAt: string;
+  bio: string;
+}
+
 interface TribeData {
   id: number;
   name: string;
@@ -50,7 +64,11 @@ interface TribeData {
   periodTo: string;
   paidOut: number;
   accentColor: string;
+  coverImage?: string;
+  adminMemberId: number;
   currentUserMemberId: number;
+  isOpen?: boolean;
+  pendingRequests?: JoinRequest[];
   members: TribeMember[];
   wallPosts: WallPost[];
 }
@@ -86,6 +104,46 @@ const TRIBES: Record<string, TribeData> = {
     periodTo: "12.7.23",
     paidOut: 4,
     accentColor: "#3dbf00",
+    adminMemberId: 5,
+    isOpen: true,
+    pendingRequests: [
+      {
+        id: 201,
+        name: "Rafael Medina",
+        initials: "RM",
+        email: "r.medina@gmail.com",
+        phone: "+1 809 555 0120",
+        location: "Santo Domingo, DR",
+        occupation: "Entrepreneur",
+        requestedSlot: 9,
+        requestedAt: "2 hours ago",
+        bio: "Running my third business venture. Reliable and always on time with payments. Looking to build savings with a trusted group.",
+      },
+      {
+        id: 202,
+        name: "Laura Castillo",
+        initials: "LC",
+        email: "l.castillo@gmail.com",
+        phone: "+1 809 555 0243",
+        location: "Santiago, DR",
+        occupation: "Nurse",
+        requestedSlot: 9,
+        requestedAt: "5 hours ago",
+        bio: "Healthcare professional with 5 years of stokvel experience. Never missed a payment in 3 previous tribes.",
+      },
+      {
+        id: 203,
+        name: "Marco Rivera",
+        initials: "MR",
+        email: "m.rivera@gmail.com",
+        phone: "+1 829 555 0187",
+        location: "La Romana, DR",
+        occupation: "Teacher",
+        requestedSlot: 10,
+        requestedAt: "1 day ago",
+        bio: "High school teacher saving for home renovations. Responsible and committed to group savings.",
+      },
+    ],
     members: [
       { id: 1, name: "José Pérez",        email: "jperez@hotmail.com",     turnNumber: 1, turnDate: "12.2.23", status: "paid",     initials: "JP" },
       { id: 2, name: "Joshua Fernández",  email: "jfernandez@hotmail.com", turnNumber: 2, turnDate: "12.2.23", status: "paid",     initials: "JF" },
@@ -165,6 +223,7 @@ const TRIBES: Record<string, TribeData> = {
     periodTo: "06.1.23",
     paidOut: 3,
     accentColor: "#2a8a00",
+    adminMemberId: 5,
     currentUserMemberId: 5,
     members: [
       { id: 1, name: "AJ Smith",     email: "aj@hotmail.com", turnNumber: 1, turnDate: "01.1.23", status: "paid",     initials: "AJ" },
@@ -881,7 +940,14 @@ function MemberStatusBadge({ status }: { status: TribeMember["status"] }) {
 function InfoTab({ tribe }: { tribe: TribeData }) {
   const fmt = (v: number) => v.toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const currentUser = tribe.members.find(m => m.id === tribe.currentUserMemberId);
-  const adminInitials = tribe.adminName.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
+  const isAdmin = tribe.currentUserMemberId === tribe.adminMemberId;
+
+  const [adminId, setAdminId] = useState(tribe.adminMemberId);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const adminMember = tribe.members.find(m => m.id === adminId);
+  const adminDisplayName = adminMember?.name ?? tribe.adminName;
+  const adminInitials = adminDisplayName.split(" ").map((n: string) => n[0]).join("").slice(0, 2).toUpperCase();
 
   return (
     <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
@@ -956,14 +1022,62 @@ function InfoTab({ tribe }: { tribe: TribeData }) {
       </div>
 
       {/* Admin */}
-      <div className="p-4 bg-muted/40 rounded-2xl flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-foreground text-[13px] font-bold flex-shrink-0">
-          {adminInitials}
-        </div>
-        <div>
-          <p className="text-muted-foreground text-[11px] uppercase tracking-widest font-semibold">Admin</p>
-          <p className="text-foreground font-bold text-[15px]">{tribe.adminName}</p>
-        </div>
+      <div className="bg-muted/40 rounded-2xl overflow-hidden">
+        {isAdmin ? (
+          <>
+            <button
+              onClick={() => setDropdownOpen(o => !o)}
+              className="w-full flex items-center gap-3 p-4 hover:bg-muted/60 transition-colors"
+            >
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center text-white text-[13px] font-bold flex-shrink-0"
+                style={{ background: "var(--cta-gradient)" }}
+              >
+                {adminInitials}
+              </div>
+              <div className="flex-1 text-left min-w-0">
+                <p className="text-muted-foreground text-[11px] uppercase tracking-widest font-semibold">Admin</p>
+                <p className="text-foreground font-bold text-[15px] truncate">{adminDisplayName}</p>
+              </div>
+              <ChevronDown
+                size={16}
+                className={`text-muted-foreground flex-shrink-0 transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {dropdownOpen && (
+              <div className="border-t border-border">
+                <p className="px-4 pt-3 pb-1.5 text-muted-foreground text-[10px] uppercase tracking-widest font-semibold">
+                  Transfer admin to
+                </p>
+                {tribe.members
+                  .filter(m => m.id !== adminId)
+                  .map(m => (
+                    <button
+                      key={m.id}
+                      onClick={() => { setAdminId(m.id); setDropdownOpen(false); }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-muted transition-colors"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-foreground text-[11px] font-bold flex-shrink-0">
+                        {m.initials}
+                      </div>
+                      <p className="text-foreground text-[13px] font-medium text-left flex-1 truncate">{m.name}</p>
+                    </button>
+                  ))}
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="flex items-center gap-3 p-4">
+            <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-foreground text-[13px] font-bold flex-shrink-0">
+              {adminInitials}
+            </div>
+            <div>
+              <p className="text-muted-foreground text-[11px] uppercase tracking-widest font-semibold">Admin</p>
+              <p className="text-foreground font-bold text-[15px]">{adminDisplayName}</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Members */}
@@ -974,10 +1088,7 @@ function InfoTab({ tribe }: { tribe: TribeData }) {
         <div className="space-y-3">
           {tribe.members.map((m) => (
             <div key={m.id} className="flex items-center gap-2.5">
-              <div
-                className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] text-white font-bold flex-shrink-0"
-                style={{ background: "var(--cta-gradient)" }}
-              >
+              <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-[11px] text-muted-foreground font-semibold flex-shrink-0">
                 {m.turnNumber}
               </div>
               <div className="min-w-0 flex-1">
@@ -994,17 +1105,233 @@ function InfoTab({ tribe }: { tribe: TribeData }) {
   );
 }
 
+// ─── Requests Tab ────────────────────────────────────────────────────────────
+
+function RequestsTab({
+  requests,
+  onViewProfile,
+  onAccept,
+  onReject,
+}: {
+  requests: JoinRequest[];
+  onViewProfile: (r: JoinRequest) => void;
+  onAccept: (id: number) => void;
+  onReject: (id: number) => void;
+}) {
+  if (requests.length === 0) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center px-8 text-center gap-3">
+        <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center">
+          <Users size={22} className="text-muted-foreground" />
+        </div>
+        <div>
+          <p className="text-foreground font-bold text-[15px]">No pending requests</p>
+          <p className="text-muted-foreground text-[12px] mt-0.5">
+            People who request to join will appear here
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const bySlot = requests.reduce<Record<number, JoinRequest[]>>((acc, r) => {
+    (acc[r.requestedSlot] ??= []).push(r);
+    return acc;
+  }, {});
+  const slots = Object.keys(bySlot).map(Number).sort((a, b) => a - b);
+
+  return (
+    <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6">
+      {slots.map(slot => (
+        <div key={slot}>
+          {/* Slot header */}
+          <div className="flex items-center gap-2.5 mb-3">
+            <span className="text-foreground font-bold text-[13px]">Slot {slot}</span>
+            <div className="flex-1 h-px bg-border" />
+            {bySlot[slot].length > 1 && (
+              <span className="text-muted-foreground text-[11px] font-medium">
+                {bySlot[slot].length} applicants
+              </span>
+            )}
+          </div>
+
+          <div className="space-y-2.5">
+            {bySlot[slot].map(req => (
+              <div
+                key={req.id}
+                className="flex items-center gap-3 p-3.5 bg-card border border-border rounded-2xl"
+              >
+                {/* Tap area → view profile */}
+                <button
+                  onClick={() => onViewProfile(req)}
+                  className="flex items-center gap-3 flex-1 min-w-0 text-left"
+                >
+                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-[12px] text-foreground font-bold flex-shrink-0">
+                    {req.initials}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-foreground font-semibold text-[13px] truncate">{req.name}</p>
+                    <p className="text-muted-foreground text-[11px]">
+                      {req.requestedAt} · {req.occupation}
+                    </p>
+                  </div>
+                </button>
+                {/* Quick actions */}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <button
+                    onClick={() => onReject(req.id)}
+                    className="w-8 h-8 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center hover:bg-red-500/20 transition-colors"
+                    aria-label="Reject"
+                  >
+                    <X size={13} className="text-red-500" />
+                  </button>
+                  <button
+                    onClick={() => onAccept(req.id)}
+                    className="h-8 px-3.5 rounded-full text-white text-[12px] font-semibold hover:opacity-90 transition-opacity"
+                    style={{ background: "var(--cta-gradient)" }}
+                  >
+                    Accept
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Request Profile Sheet ────────────────────────────────────────────────────
+
+function RequestProfileSheet({
+  request,
+  onClose,
+  onAccept,
+  onReject,
+}: {
+  request: JoinRequest;
+  onClose: () => void;
+  onAccept: (id: number) => void;
+  onReject: (id: number) => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    requestAnimationFrame(() => setOpen(true));
+  }, []);
+
+  function close() {
+    setOpen(false);
+    setTimeout(onClose, 300);
+  }
+
+  const details: { Icon: React.ElementType; value: string }[] = [
+    { Icon: Mail,      value: request.email },
+    { Icon: Phone,     value: request.phone },
+    { Icon: MapPin,    value: request.location },
+    { Icon: Briefcase, value: request.occupation },
+  ];
+
+  return (
+    <div className="absolute inset-0 z-30 flex items-end">
+      {/* Backdrop */}
+      <div
+        className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${open ? "opacity-100" : "opacity-0"}`}
+        onClick={close}
+      />
+
+      {/* Sheet */}
+      <div
+        className={`relative w-full bg-card rounded-t-3xl flex flex-col transition-transform duration-300 ease-out ${open ? "translate-y-0" : "translate-y-full"}`}
+        style={{ maxHeight: "88%" }}
+      >
+        {/* Handle */}
+        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+          <div className="w-10 h-1 rounded-full bg-border" />
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-6 pb-8">
+          {/* Avatar + name */}
+          <div className="flex flex-col items-center text-center py-5">
+            <div
+              className="w-[72px] h-[72px] rounded-full bg-muted flex items-center justify-center text-foreground text-[22px] font-bold mb-3"
+            >
+              {request.initials}
+            </div>
+            <p className="text-foreground font-bold text-[18px]">{request.name}</p>
+            <div
+              className="mt-1.5 px-3 py-0.5 rounded-full text-[11px] font-semibold"
+              style={{ background: "var(--color-primary)" + "1a", color: "var(--color-primary)" }}
+            >
+              Requesting slot {request.requestedSlot}
+            </div>
+          </div>
+
+          {/* Contact details */}
+          <div className="space-y-2.5">
+            {details.map(({ Icon, value }) => (
+              <div key={value} className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center flex-shrink-0">
+                  <Icon size={14} className="text-muted-foreground" />
+                </div>
+                <p className="text-foreground text-[13px]">{value}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Bio */}
+          {request.bio && (
+            <div className="mt-4 p-4 bg-muted/50 rounded-2xl">
+              <p className="text-muted-foreground text-[12px] leading-relaxed">{request.bio}</p>
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex gap-3 mt-6">
+            <button
+              onClick={() => { onReject(request.id); close(); }}
+              className="flex-1 h-12 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-[14px] font-semibold hover:bg-red-500/20 transition-colors"
+            >
+              Reject
+            </button>
+            <button
+              onClick={() => { onAccept(request.id); close(); }}
+              className="flex-1 h-12 rounded-xl text-white text-[14px] font-semibold hover:opacity-90 active:scale-[0.98] transition-all"
+              style={{ background: "var(--cta-gradient)" }}
+            >
+              Accept member
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
-type Tab = "turns" | "wall" | "info";
+type Tab = "turns" | "wall" | "info" | "requests";
 
 export default function TribeDetail() {
   const { id = "1" } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const tribe = getFallbackTribe(id);
+  const isAdmin = tribe.currentUserMemberId === tribe.adminMemberId;
+
   const [activeTab, setActiveTab] = useState<Tab>("turns");
   const [selectedMember, setSelectedMember] = useState<TribeMember | null>(null);
   const [showSwapToast, setShowSwapToast] = useState(false);
+  const [coverImage, setCoverImage] = useState<string | undefined>(tribe.coverImage);
+  const [pendingRequests, setPendingRequests] = useState<JoinRequest[]>(tribe.pendingRequests ?? []);
+  const [selectedRequest, setSelectedRequest] = useState<JoinRequest | null>(null);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+
+  function handleCoverChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCoverImage(URL.createObjectURL(file));
+  }
 
   useEffect(() => {
     if (!showSwapToast) return;
@@ -1017,10 +1344,22 @@ export default function TribeDetail() {
     setShowSwapToast(true);
   }
 
-  const tabs: { key: Tab; label: string }[] = [
+  function handleAcceptRequest(id: number) {
+    setPendingRequests(r => r.filter(x => x.id !== id));
+    setSelectedRequest(null);
+  }
+  function handleRejectRequest(id: number) {
+    setPendingRequests(r => r.filter(x => x.id !== id));
+    setSelectedRequest(null);
+  }
+
+  const tabs: { key: Tab; label: string; badge?: number }[] = [
     { key: "turns", label: "Turns" },
     { key: "wall",  label: "Wall"  },
     { key: "info",  label: "Info"  },
+    ...(isAdmin && tribe.isOpen
+      ? [{ key: "requests" as Tab, label: "Requests", badge: pendingRequests.length || undefined }]
+      : []),
   ];
 
   return (
@@ -1031,10 +1370,39 @@ export default function TribeDetail() {
       >
         {/* ── Hero header ── */}
         <div className="relative h-[258px] flex-shrink-0 overflow-hidden rounded-bl-[16px] rounded-br-[16px]">
-          <div
-            className="absolute inset-0"
-            style={{ background: "linear-gradient(180deg, #0d2700 28%, #b9ec9c 140%)", opacity: 0.92 }}
-          />
+          {coverImage ? (
+            <>
+              <img
+                src={coverImage}
+                alt="Tribe cover"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            </>
+          ) : (
+            <div
+              className="absolute inset-0"
+              style={{ background: "linear-gradient(180deg, #0e1520 0%, #1c2b3a 100%)" }}
+            />
+          )}
+
+          {/* Contrast overlay — dark top fading to transparent at bottom */}
+          {coverImage && (
+            <div
+              className="absolute inset-0"
+              style={{
+                background: "linear-gradient(to bottom, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.70) 50%, rgba(0,0,0,0.62) 100%)",
+              }}
+            />
+          )}
+
+          {/* Cover image edit button */}
+          <button
+            onClick={() => coverInputRef.current?.click()}
+            className="absolute top-[66px] right-8 z-10 w-8 h-8 rounded-full bg-black/35 hover:bg-black/55 flex items-center justify-center transition-colors"
+            aria-label="Change cover photo"
+          >
+            <Pencil size={13} className="text-white" />
+          </button>
 
           {/* Nav row */}
           <div className="relative z-10 flex items-center justify-between px-8 pt-[62px]">
@@ -1042,9 +1410,7 @@ export default function TribeDetail() {
               <ArrowLeft size={24} className="text-white" />
             </button>
             <span className="text-white text-[16px] font-bold">Your tribes</span>
-            <button className="w-6 h-6 flex items-center justify-center">
-              <MoreVertical size={20} className="text-white" />
-            </button>
+            <div className="w-6 h-6" />
           </div>
 
           {/* Tabs row */}
@@ -1055,9 +1421,16 @@ export default function TribeDetail() {
                 onClick={() => setActiveTab(t.key)}
                 className="flex flex-col items-center gap-1 pb-1"
               >
-                <span className={`text-[13px] font-semibold ${activeTab === t.key ? "text-white" : "text-white/55"}`}>
-                  {t.label}
-                </span>
+                <div className="flex items-center gap-1">
+                  <span className={`text-[13px] font-semibold ${activeTab === t.key ? "text-white" : "text-white/55"}`}>
+                    {t.label}
+                  </span>
+                  {t.badge && t.badge > 0 ? (
+                    <div className="w-[15px] h-[15px] rounded-full bg-red-500 flex items-center justify-center">
+                      <span className="text-white text-[9px] font-bold leading-none">{t.badge}</span>
+                    </div>
+                  ) : null}
+                </div>
                 {activeTab === t.key && (
                   <div className="h-[2px] w-full rounded-full bg-primary" />
                 )}
@@ -1065,48 +1438,69 @@ export default function TribeDetail() {
             ))}
           </div>
 
-          {/* Tribe name */}
-          <div className="relative z-10 px-8 mt-4">
-            <p className="text-white/60 text-[12px]">Tribe name</p>
-            <p className="text-white text-[16px] font-semibold">{tribe.name}</p>
+          {/* Tribe name + round count */}
+          <div
+            className="relative z-10 px-8 mt-4 flex items-end justify-between"
+            style={{ textShadow: "0 1px 6px rgba(0,0,0,0.7)" }}
+          >
+            <div>
+              <p className="text-white/70 text-[11px] uppercase tracking-widest font-semibold">Tribe name</p>
+              <p className="text-white text-[16px] font-semibold leading-snug">{tribe.name}</p>
+            </div>
+            <p className="text-white/70 text-[11px] font-medium mb-0.5">
+              Round <span className="text-white font-bold">{tribe.paidOut}</span> of {tribe.tribeSize}
+            </p>
           </div>
 
-          {/* Progress ring */}
-          <div className="absolute right-8 bottom-6 z-10">
-            <div className="relative w-[85px] h-[85px]">
-              <svg className="w-full h-full -rotate-90" viewBox="0 0 85 85">
-                {Array.from({ length: tribe.tribeSize }).map((_, index) => {
-                  const circumference = 2 * Math.PI * 31;
-                  const dashLen = (circumference / tribe.tribeSize) * 0.65;
-                  const gapLen  = (circumference / tribe.tribeSize) * 0.35;
-                  const offset  = -index * (circumference / tribe.tribeSize);
-                  return (
-                    <circle
-                      key={index}
-                      cx="42.5" cy="42.5" r="31"
-                      fill="none"
-                      stroke={index < tribe.paidOut ? "var(--color-primary)" : "rgba(255,255,255,0.2)"}
-                      strokeWidth="7"
-                      strokeDasharray={`${dashLen} ${gapLen}`}
-                      strokeDashoffset={offset}
-                      strokeLinecap="round"
-                    />
-                  );
-                })}
-              </svg>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-white text-[11px] font-medium">{tribe.paidOut}/{tribe.tribeSize}</span>
-              </div>
-            </div>
+          {/* Segmented round progress bar */}
+          <div className="relative z-10 px-8 mt-2.5 pb-5 flex gap-[3px]">
+            {Array.from({ length: tribe.tribeSize }).map((_, i) => (
+              <div
+                key={i}
+                className="flex-1 h-[4px] rounded-full"
+                style={{
+                  backgroundColor: i < tribe.paidOut
+                    ? "rgba(255,255,255,0.75)"
+                    : "rgba(255,255,255,0.18)",
+                }}
+              />
+            ))}
           </div>
         </div>
+
+        {/* Hidden cover image file input — kept outside overflow-hidden containers */}
+        <input
+          ref={coverInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleCoverChange}
+        />
 
         {/* ── Tab content ── */}
         <div className="flex-1 flex flex-col overflow-hidden bg-background">
-          {activeTab === "turns" && <TurnsTab tribe={tribe} onMemberClick={setSelectedMember} />}
-          {activeTab === "wall"  && <WallTab  tribe={tribe} />}
-          {activeTab === "info"  && <InfoTab  tribe={tribe} />}
+          {activeTab === "turns"    && <TurnsTab tribe={tribe} onMemberClick={setSelectedMember} />}
+          {activeTab === "wall"     && <WallTab  tribe={tribe} />}
+          {activeTab === "info"     && <InfoTab  tribe={tribe} />}
+          {activeTab === "requests" && (
+            <RequestsTab
+              requests={pendingRequests}
+              onViewProfile={setSelectedRequest}
+              onAccept={handleAcceptRequest}
+              onReject={handleRejectRequest}
+            />
+          )}
         </div>
+
+        {/* ── Join request profile sheet ── */}
+        {selectedRequest && (
+          <RequestProfileSheet
+            request={selectedRequest}
+            onClose={() => setSelectedRequest(null)}
+            onAccept={handleAcceptRequest}
+            onReject={handleRejectRequest}
+          />
+        )}
 
         {/* ── Member modal ── */}
         {selectedMember && (
