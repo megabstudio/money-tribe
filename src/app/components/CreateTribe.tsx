@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { ArrowLeft, MoreVertical, Check, Search, X, ChevronLeft, ChevronRight, Calendar, Plus, Camera } from "lucide-react";
+import MobileStatusBar from "./MobileStatusBar";
 
 // ─── Calendar Picker ──────────────────────────────────────────────────────────
 
@@ -327,8 +328,7 @@ function fmtAmount(v: number) {
 function StepCircle({ num, state }: { num: number; state: "done" | "active" | "idle" }) {
   if (state === "done") {
     return (
-      <div className="w-11 h-11 rounded-full flex items-center justify-center text-white text-[14px]"
-        style={{ background: "var(--cta-gradient)" }}>
+      <div className="w-11 h-11 rounded-full flex items-center justify-center text-background text-[14px] bg-foreground">
         {num}
       </div>
     );
@@ -393,8 +393,8 @@ function Stepper({ step, maxStep, onStepClick }: {
                   className="flex-1 mx-1 h-[2px] rounded-full"
                   style={{
                     marginTop: "28px",
-                    backgroundColor: step > s.num ? "var(--color-primary)" : "var(--color-muted-foreground)",
-                    opacity: step > s.num ? 1 : 0.3,
+                    backgroundColor: "var(--color-foreground)",
+                    opacity: step > s.num ? 0.5 : 0.2,
                   }}
                 />
               )}
@@ -606,7 +606,7 @@ function StepSchedule({ form, setForm, onNext }: {
             Tribe ends on
           </p>
           <div className="flex items-center gap-2 mb-1">
-            <Calendar size={18} className="text-primary flex-shrink-0" />
+            <Calendar size={18} className="text-muted-foreground flex-shrink-0" />
             <p className="text-foreground font-bold text-[20px]">{fmtDate(form.endDate)}</p>
           </div>
           <p className="text-muted-foreground text-[12px]">
@@ -753,7 +753,7 @@ function StepMembers({ form, setForm, onNext }: {
       {form.isOpen ? (
         /* ── Open tribe info ── */
         <div className="flex-1 px-6 space-y-4">
-          <div className="p-5 rounded-2xl border border-primary/20 bg-primary/5 space-y-3">
+          <div className="p-5 rounded-2xl border border-border bg-muted/40 space-y-3">
             <div
               className="w-12 h-12 rounded-2xl flex items-center justify-center"
               style={{ background: "var(--cta-gradient)" }}
@@ -779,8 +779,8 @@ function StepMembers({ form, setForm, onNext }: {
               "Tribe starts automatically once all spots are filled",
             ].map(item => (
               <div key={item} className="flex items-start gap-2.5">
-                <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5" style={{ background: "var(--cta-gradient)" }}>
-                  <Check size={11} className="text-white" />
+                <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 bg-muted">
+                  <Check size={11} className="text-foreground" />
                 </div>
                 <p className="text-foreground text-[13px] leading-snug">{item}</p>
               </div>
@@ -868,7 +868,7 @@ function StepMembers({ form, setForm, onNext }: {
                   "flex-1 h-12 border rounded-xl flex items-center justify-between px-3 transition-all duration-150",
                   isDropTarget
                     ? "border-primary bg-primary/10 ring-2 ring-primary/30 scale-[1.02]"
-                    : "border-primary/30 bg-primary/5",
+                    : "border-border bg-muted/40",
                 ].join(" ")}>
                   <div className="min-w-0">
                     <p className="text-foreground text-[13px] font-semibold truncate">{member.name}</p>
@@ -940,7 +940,7 @@ function StepSummary({ form, setForm, onPublish }: {
       </div>
 
       {/* Financial summary */}
-      <div className="p-4 rounded-2xl border border-primary/20 bg-primary/5">
+      <div className="p-4 rounded-2xl border border-border bg-muted/40">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-muted-foreground text-[11px] uppercase tracking-widest font-semibold">Contribution</p>
@@ -949,10 +949,7 @@ function StepSummary({ form, setForm, onPublish }: {
           </div>
           <div className="text-right">
             <p className="text-muted-foreground text-[11px] uppercase tracking-widest font-semibold">Total saved</p>
-            <p
-              className="font-extrabold text-[24px] tabular-nums leading-tight"
-              style={{ background: "var(--cta-gradient)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}
-            >
+            <p className="font-extrabold text-[24px] tabular-nums leading-tight text-foreground">
               RD$ {fmtAmount(totalSaved)}
             </p>
             <p className="text-muted-foreground text-[11px]">per participant</p>
@@ -1006,17 +1003,14 @@ function StepSummary({ form, setForm, onPublish }: {
           <div className="space-y-2.5">
           {form.members.map((m, i) => (
             <div key={m.id} className="flex items-center gap-2.5">
-              <div
-                className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] text-white font-bold flex-shrink-0"
-                style={{ background: "var(--cta-gradient)" }}
-              >
+              <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] text-foreground font-bold flex-shrink-0 bg-muted">
                 {i + 1}
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-foreground text-[13px] font-semibold truncate">{m.name}</p>
                 <p className="text-muted-foreground text-[11px] truncate">{m.email}</p>
               </div>
-              <Check size={15} className="text-primary flex-shrink-0" />
+              <Check size={15} className="text-muted-foreground flex-shrink-0" />
             </div>
           ))}
           </div>
@@ -1076,8 +1070,10 @@ export default function CreateTribe() {
         className="relative w-full max-w-[390px] bg-background overflow-hidden flex flex-col md:rounded-[44px] md:shadow-2xl md:border md:border-border"
         style={{ minHeight: "100svh", maxHeight: "100svh", height: "100svh" }}
       >
+        <MobileStatusBar />
+
         {/* Header */}
-        <div className="flex-shrink-0 flex items-center justify-between px-8 pt-16 pb-2">
+        <div className="flex-shrink-0 flex items-center justify-between px-8 pt-4 pb-2">
           <button onClick={handleBack} className="w-6 h-6 flex items-center justify-center">
             <ArrowLeft size={24} className="text-foreground" />
           </button>

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import {
   ArrowLeft, Search, X, Calendar, ChevronRight, Check, ChevronLeft,
 } from "lucide-react";
+import MobileStatusBar from "./MobileStatusBar";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -154,7 +155,7 @@ function TribeCard({ tribe, onClick }: { tribe: OpenTribe; onClick: () => void }
         {/* Name + spots badge */}
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[20px] flex-shrink-0 bg-primary/10">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[20px] flex-shrink-0 bg-muted">
               {tribe.emoji}
             </div>
             <div className="min-w-0">
@@ -179,7 +180,7 @@ function TribeCard({ tribe, onClick }: { tribe: OpenTribe; onClick: () => void }
             {tribe.size} members
           </span>
           {soon && (
-            <span className="px-2 py-0.5 rounded-md text-[12px] font-semibold text-primary bg-primary/10">
+            <span className="px-2 py-0.5 rounded-md text-[12px] font-semibold text-muted-foreground bg-muted">
               Starting soon
             </span>
           )}
@@ -193,7 +194,7 @@ function TribeCard({ tribe, onClick }: { tribe: OpenTribe; onClick: () => void }
               className="flex-1 h-1.5 rounded-full"
               style={
                 takenSet.has(i)
-                  ? { background: "var(--cta-gradient)" }
+                  ? { backgroundColor: "var(--color-foreground)" }
                   : { backgroundColor: "var(--color-border, hsl(var(--border)))" }
               }
             />
@@ -206,7 +207,7 @@ function TribeCard({ tribe, onClick }: { tribe: OpenTribe; onClick: () => void }
             <Calendar size={12} />
             <span className="text-[12px]">Starts {fmtDateShort(tribe.startDate)}</span>
           </div>
-          <div className="flex items-center gap-0.5 text-primary text-[12px] font-semibold">
+          <div className="flex items-center gap-0.5 text-muted-foreground text-[12px] font-semibold">
             View <ChevronRight size={13} />
           </div>
         </div>
@@ -258,7 +259,7 @@ function TribeDetailSheet({ tribe, onClose }: { tribe: OpenTribe; onClose: () =>
           <>
             <div className="flex-shrink-0 flex items-center justify-between px-5 pt-2 pb-4">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-[24px] bg-primary/10 flex-shrink-0">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-[24px] bg-muted flex-shrink-0">
                   {tribe.emoji}
                 </div>
                 <div className="min-w-0">
@@ -274,7 +275,7 @@ function TribeDetailSheet({ tribe, onClose }: { tribe: OpenTribe; onClose: () =>
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-5 pb-3 space-y-3">
+            <div className="flex-1 overflow-y-auto scrollbar-hide px-5 pb-3 space-y-3">
               <p className="text-muted-foreground text-[13px] leading-relaxed">{tribe.description}</p>
 
               {/* Financials */}
@@ -377,7 +378,7 @@ function TribeDetailSheet({ tribe, onClose }: { tribe: OpenTribe; onClose: () =>
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-5 pb-3 space-y-4">
+            <div className="flex-1 overflow-y-auto scrollbar-hide px-5 pb-3 space-y-4">
               <div className="grid grid-cols-4 gap-2.5">
                 {Array.from({ length: tribe.size }).map((_, i) => {
                   const taken  = takenMap.has(i);
@@ -416,7 +417,7 @@ function TribeDetailSheet({ tribe, onClose }: { tribe: OpenTribe; onClose: () =>
               </div>
 
               {selectedSlot !== null && (
-                <div className="p-4 rounded-2xl border border-primary/20 bg-primary/5">
+                <div className="p-4 rounded-2xl border border-border bg-muted/40">
                   <p className="text-foreground font-bold text-[14px] mb-0.5">
                     Spot {selectedSlot + 1} · {slotPayoutDate(tribe.startDate, tribe.paymentPeriod, selectedSlot)}
                   </p>
@@ -519,8 +520,10 @@ export default function FindTribe() {
         className="relative w-full max-w-[390px] bg-background overflow-hidden flex flex-col md:rounded-[44px] md:shadow-2xl md:border md:border-border"
         style={{ minHeight: "100svh", maxHeight: "100svh", height: "100svh" }}
       >
+        <MobileStatusBar />
+
         {/* ── Header ── */}
-        <div className="flex-shrink-0 flex items-center gap-3 px-5 pt-12 pb-4 border-b border-border">
+        <div className="flex-shrink-0 flex items-center gap-3 px-5 pt-3 pb-4 border-b border-border">
           <button
             onClick={() => navigate(-1)}
             className="w-9 h-9 rounded-full bg-muted flex items-center justify-center hover:bg-accent transition-colors"
@@ -592,7 +595,7 @@ export default function FindTribe() {
         </div>
 
         {/* ── Tribe list ── */}
-        <div className="flex-1 overflow-y-auto px-5 pb-6 space-y-3">
+        <div className="flex-1 overflow-y-auto scrollbar-hide px-5 pb-6 space-y-3">
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-52 text-center">
               <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mb-4 text-[28px]">

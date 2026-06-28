@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { Compass, Home, MessageCircle, User, Plus, Search, MessageSquare } from "lucide-react";
+import { Compass, Home, MessageCircle, LayoutGrid, Plus, Search, MessageSquare } from "lucide-react";
+import MobileStatusBar from "./MobileStatusBar";
 
 type DateFilter = "all" | "today" | "week" | "month";
-type NavTab = "home" | "messages" | "find" | "user";
+type NavTab = "home" | "messages" | "find" | "tribes";
 
 interface TribeMessage {
   id: number;
@@ -123,8 +124,8 @@ const NAV_ITEMS_LEFT: { id: NavTab; Icon: typeof Home; label: string }[] = [
   { id: "messages", Icon: MessageCircle, label: "Messages" },
 ];
 const NAV_ITEMS_RIGHT: { id: NavTab; Icon: typeof Home; label: string }[] = [
-  { id: "find", Icon: Compass, label: "Find"    },
-  { id: "user", Icon: User,    label: "Profile" },
+  { id: "find",   Icon: Compass,    label: "Find"        },
+  { id: "tribes", Icon: LayoutGrid, label: "Your tribes" },
 ];
 
 export default function Messages() {
@@ -132,8 +133,9 @@ export default function Messages() {
   const [activeFilter, setActiveFilter] = useState<DateFilter>("all");
 
   const handleNavClick = (id: NavTab) => {
-    if (id === "home") navigate("/dashboard");
-    if (id === "find") navigate("/find-tribe");
+    if (id === "home")   navigate("/dashboard");
+    if (id === "find")   navigate("/find-tribe");
+    if (id === "tribes") navigate("/your-tribes");
   };
 
   const filtered = MESSAGES.filter((msg) => {
@@ -151,27 +153,7 @@ export default function Messages() {
         className="relative w-full max-w-[390px] bg-background overflow-hidden flex flex-col md:rounded-[44px] md:shadow-2xl md:border md:border-border"
         style={{ minHeight: "100svh", maxHeight: "100svh", height: "100svh" }}
       >
-        {/* Status bar */}
-        <div className="flex-shrink-0 flex justify-between items-center px-7 pt-4 pb-1">
-          <span className="text-[12px] font-semibold text-foreground/70">9:41</span>
-          <div className="flex items-center gap-2 text-foreground/70">
-            <div className="flex items-end gap-[2px]">
-              {[1, 2, 3, 4].map((h) => (
-                <div key={h} className="w-[3px] rounded-[1px] bg-current" style={{ height: `${h * 3}px` }} />
-              ))}
-            </div>
-            <svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor">
-              <path d="M7.5 8.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z" />
-              <path d="M3.5 5.2a5.7 5.7 0 0 1 8 0l1.1-1.1a7.3 7.3 0 0 0-10.2 0l1.1 1.1z" />
-              <path d="M5.7 7.4a2.8 2.8 0 0 1 3.6 0l1.1-1.1a4.3 4.3 0 0 0-5.8 0l1.1 1.1z" />
-              <path d="M1.4 2.9a9.3 9.3 0 0 1 12.2 0l1-1A10.8 10.8 0 0 0 .4 1.9l1 1z" />
-            </svg>
-            <div className="relative w-[22px] h-[11px] rounded-[3px] border border-current/60">
-              <div className="absolute left-[2px] top-[2px] bottom-[2px] w-[13px] bg-current rounded-[1px]" />
-              <div className="absolute right-[-3px] top-[3px] bottom-[3px] w-[2px] bg-current/60 rounded-r-[1px]" />
-            </div>
-          </div>
-        </div>
+        <MobileStatusBar />
 
         {/* Header */}
         <div className="flex-shrink-0 flex items-center justify-between px-5 pt-3 pb-2">
@@ -197,7 +179,7 @@ export default function Messages() {
               onClick={() => setActiveFilter(f.id)}
               className={`flex-shrink-0 px-4 py-2 rounded-full text-[13px] font-semibold transition-colors ${
                 activeFilter === f.id
-                  ? "bg-primary text-primary-foreground"
+                  ? "bg-foreground text-background"
                   : "bg-muted text-muted-foreground hover:bg-accent"
               }`}
             >
@@ -241,7 +223,7 @@ export default function Messages() {
                       </p>
                       <span className="text-[11px] text-muted-foreground flex-shrink-0">{msg.timestamp}</span>
                     </div>
-                    <p className="text-[11px] font-semibold text-primary mb-1">{msg.tribeName}</p>
+                    <p className="text-[11px] font-semibold text-muted-foreground mb-1">{msg.tribeName}</p>
                     <p className={`text-[13px] leading-snug truncate ${msg.unread ? "text-foreground/90" : "text-muted-foreground"}`}>
                       {msg.preview}
                     </p>

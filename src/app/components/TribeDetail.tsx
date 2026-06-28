@@ -3,8 +3,9 @@ import { useNavigate, useParams } from "react-router";
 import {
   ArrowLeft, Pencil,
   RefreshCw, Calendar, Send, X, ChevronDown, ChevronRight, CheckCircle, MessageCircle,
-  Mail, Phone, MapPin, Briefcase, Users,
+  Mail, Phone, MapPin, Briefcase, Users, Trophy,
 } from "lucide-react";
+import MobileStatusBar from "./MobileStatusBar";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -148,8 +149,8 @@ const TRIBES: Record<string, TribeData> = {
       { id: 1, name: "José Pérez",        email: "jperez@hotmail.com",     turnNumber: 1, turnDate: "12.2.23", status: "paid",     initials: "JP" },
       { id: 2, name: "Joshua Fernández",  email: "jfernandez@hotmail.com", turnNumber: 2, turnDate: "12.2.23", status: "paid",     initials: "JF" },
       { id: 3, name: "Emily Guerra",      email: "eguerra@hotmail.com",    turnNumber: 3, turnDate: "12.2.23", status: "paid",     initials: "EG" },
-      { id: 4, name: "Juan García",       email: "jgarcia@hotmail.com",    turnNumber: 4, turnDate: "12.2.23", status: "active",   initials: "JG" },
-      { id: 5, name: "Amy Gómez",         email: "agomez@hotmail.com",     turnNumber: 5, turnDate: "12.2.23", status: "waiting",  initials: "AG" },
+      { id: 4, name: "Juan García",       email: "jgarcia@hotmail.com",    turnNumber: 4, turnDate: "12.2.23", status: "paid",     initials: "JG" },
+      { id: 5, name: "Amy Gómez",         email: "agomez@hotmail.com",     turnNumber: 5, turnDate: "12.2.23", status: "active",   initials: "AG" },
       { id: 6, name: "Penelope Cruz",     email: "pcruz@hotmail.com",      turnNumber: 6, turnDate: "12.2.23", status: "waiting",  initials: "PC" },
       { id: 7, name: "Alice García",      email: "agarcia@hotmail.com",    turnNumber: 7, turnDate: "12.2.23", status: "upcoming", initials: "AG" },
       { id: 8, name: "Devendra Banhart",  email: "dbanhart@hotmail.com",   turnNumber: 8, turnDate: "12.2.23", status: "upcoming", initials: "DB" },
@@ -286,12 +287,33 @@ function renderWithMentions(text: string) {
 
 // ─── Payment Badge ─────────────────────────────────────────────────────────────
 
-function PaymentBadge({ status }: { status: "Paid" | "Unpaid" }) {
-  if (status === "Paid") return (
-    <span className="px-2.5 py-1 rounded-lg text-[11px] bg-primary/20 text-primary font-semibold">Paid</span>
-  );
+function PaymentBadge({
+  status,
+  onToggle,
+}: {
+  status: "Paid" | "Unpaid";
+  onToggle?: (e: React.MouseEvent) => void;
+}) {
+  const base =
+    status === "Paid"
+      ? "bg-primary/20 text-primary"
+      : "bg-muted text-muted-foreground";
+
+  if (onToggle) {
+    return (
+      <button
+        onClick={onToggle}
+        className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all active:scale-95 hover:opacity-80 ${base}`}
+      >
+        {status}
+      </button>
+    );
+  }
+
   return (
-    <span className="px-2.5 py-1 rounded-lg text-[11px] bg-muted text-muted-foreground font-medium">Unpaid</span>
+    <span className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold ${base}`}>
+      {status}
+    </span>
   );
 }
 
@@ -361,8 +383,8 @@ function MemberModal({
               <p className="font-bold text-foreground text-[17px] leading-tight">{member.name}</p>
               <p className="text-muted-foreground text-[13px] mt-0.5 truncate">{member.email}</p>
             </div>
-            <div className="flex-shrink-0 bg-primary/10 px-3 py-1.5 rounded-full">
-              <span className="text-[12px] font-semibold text-primary">Turn {member.turnNumber}</span>
+            <div className="flex-shrink-0 bg-muted px-3 py-1.5 rounded-full">
+              <span className="text-[12px] font-semibold text-muted-foreground">Turn {member.turnNumber}</span>
             </div>
           </div>
         )}
@@ -377,16 +399,16 @@ function MemberModal({
                 <p className="font-bold text-foreground text-[15px] leading-tight">{member.name}</p>
                 <p className="text-muted-foreground text-[12px] mt-0.5 truncate">{member.email}</p>
               </div>
-              <div className="flex-shrink-0 bg-primary/10 px-2.5 py-1 rounded-full">
-                <span className="text-[11px] font-semibold text-primary">Turn {member.turnNumber}</span>
+              <div className="flex-shrink-0 bg-muted px-2.5 py-1 rounded-full">
+                <span className="text-[11px] font-semibold text-muted-foreground">Turn {member.turnNumber}</span>
               </div>
             </div>
             <button
               onClick={() => setView("swap")}
               className="w-full flex items-center gap-4 p-4 rounded-2xl border border-border hover:bg-muted/40 active:bg-muted transition-colors text-left"
             >
-              <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <RefreshCw size={20} className="text-primary" />
+              <div className="w-11 h-11 rounded-xl bg-muted flex items-center justify-center flex-shrink-0">
+                <RefreshCw size={20} className="text-foreground" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-foreground text-[15px]">Request turn swap</p>
@@ -417,8 +439,8 @@ function MemberModal({
                 You're requesting to swap your turn with <span className="font-semibold text-foreground">{member.name.split(" ")[0]}</span>. They'll receive a notification to approve.
               </p>
               <div className="bg-muted/50 rounded-2xl p-4 flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                  <span className="text-primary text-[15px] font-bold">{member.turnNumber}</span>
+                <div className="w-10 h-10 rounded-full bg-muted/80 flex items-center justify-center flex-shrink-0">
+                  <span className="text-foreground text-[15px] font-bold">{member.turnNumber}</span>
                 </div>
                 <div>
                   <p className="text-[11px] text-muted-foreground uppercase tracking-wide font-medium">{member.name.split(" ")[0]}'s turn</p>
@@ -432,8 +454,8 @@ function MemberModal({
                 <RefreshCw size={18} className="text-muted-foreground" />
               </div>
               <div className="bg-muted/50 rounded-2xl p-4 flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                  <span className="text-primary text-[15px] font-bold">{currentUser.turnNumber}</span>
+                <div className="w-10 h-10 rounded-full bg-muted/80 flex items-center justify-center flex-shrink-0">
+                  <span className="text-foreground text-[15px] font-bold">{currentUser.turnNumber}</span>
                 </div>
                 <div>
                   <p className="text-[11px] text-muted-foreground uppercase tracking-wide font-medium">Your turn</p>
@@ -798,7 +820,7 @@ function WallTab({ tribe }: { tribe: TribeData }) {
                 onClick={() => insertMention(m.name)}
                 className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-muted transition-colors text-left"
               >
-                <div className="w-7 h-7 rounded-full bg-primary/15 flex items-center justify-center text-[10px] font-bold text-primary flex-shrink-0">
+                <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-[10px] font-bold text-foreground flex-shrink-0">
                   {m.initials}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -839,7 +861,7 @@ function WallTab({ tribe }: { tribe: TribeData }) {
             <div className="flex items-center gap-1">
               <button
                 onClick={() => { setShowEmojis(!showEmojis); setShowMentions(false); }}
-                className={`w-8 h-8 rounded-lg flex items-center justify-center text-[16px] transition-colors ${showEmojis ? "bg-primary/10" : "hover:bg-muted"}`}
+                className={`w-8 h-8 rounded-lg flex items-center justify-center text-[16px] transition-colors ${showEmojis ? "bg-muted" : "hover:bg-muted"}`}
                 aria-label="Add emoji"
               >
                 😊
@@ -874,20 +896,150 @@ function WallTab({ tribe }: { tribe: TribeData }) {
   );
 }
 
+// ─── Congratulations Modal ────────────────────────────────────────────────────
+
+function CongratsModal({
+  recipient,
+  round,
+  tribeSize,
+  payout,
+  onClose,
+}: {
+  recipient: TribeMember;
+  round: number;
+  tribeSize: number;
+  payout: number;
+  onClose: () => void;
+}) {
+  const isLastRound = round >= tribeSize;
+  const fmt = (v: number) => v.toLocaleString("es-DO", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  return (
+    <div className="absolute inset-0 z-40 flex items-center justify-center px-6" style={{ background: "rgba(0,0,0,0.70)" }}>
+      <div className="w-full bg-card rounded-3xl overflow-hidden shadow-2xl">
+        {/* Gradient header */}
+        <div
+          className="px-6 pt-8 pb-7 flex flex-col items-center text-center"
+          style={{ background: "var(--cta-gradient)" }}
+        >
+          <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mb-4">
+            <Trophy size={30} className="text-white" />
+          </div>
+          <p className="text-white/80 text-[12px] font-semibold uppercase tracking-widest mb-1">
+            Round {round} complete!
+          </p>
+          <p className="text-white font-bold text-[22px] leading-snug">
+            Congratulations,<br />{recipient.name.split(" ")[0]}! 🎉
+          </p>
+        </div>
+
+        {/* Body */}
+        <div className="px-5 py-5 space-y-4">
+          {/* Recipient info row */}
+          <div className="flex items-center gap-3 p-4 bg-muted/50 border border-border rounded-2xl">
+            <div className="w-11 h-11 rounded-full bg-muted flex items-center justify-center text-[13px] font-bold text-foreground flex-shrink-0">
+              {recipient.initials}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-muted-foreground text-[10px] uppercase tracking-widest font-semibold">Recipient</p>
+              <p className="text-foreground font-bold text-[14px] truncate">{recipient.name}</p>
+            </div>
+            <div className="text-right flex-shrink-0">
+              <p className="text-muted-foreground text-[10px] uppercase tracking-widest font-semibold">Payout</p>
+              <p className="font-bold text-[15px]" style={{ color: "var(--color-primary)" }}>
+                RD$ {fmt(payout)}
+              </p>
+            </div>
+          </div>
+
+          {isLastRound && (
+            <p className="text-center text-muted-foreground text-[12px] leading-relaxed px-2">
+              All rounds complete — this tribe has finished successfully! 🏆
+            </p>
+          )}
+
+          <button
+            onClick={onClose}
+            className="w-full h-[52px] rounded-xl flex items-center justify-center gap-2 text-white text-[15px] font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
+            style={{ background: "var(--cta-gradient)" }}
+          >
+            {isLastRound ? "Finish tribe" : `Continue to Round ${round + 1}`}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Turns Tab ────────────────────────────────────────────────────────────────
 
-function TurnsTab({ tribe, onMemberClick }: { tribe: TribeData; onMemberClick: (m: TribeMember) => void }) {
-  const currentRound = tribe.paidOut;
-  const [selectedRound, setSelectedRound] = useState(currentRound);
+function TurnsTab({
+  tribe,
+  isAdmin,
+  paidRounds,
+  onMemberClick,
+  onRoundComplete,
+}: {
+  tribe: TribeData;
+  isAdmin: boolean;
+  paidRounds: number;
+  onMemberClick: (m: TribeMember) => void;
+  onRoundComplete: (recipient: TribeMember, round: number) => void;
+}) {
+  const activeRound = Math.min(paidRounds + 1, tribe.tribeSize);
+  const [selectedRound, setSelectedRound] = useState(activeRound);
+  const [paymentOverrides, setPaymentOverrides] = useState<Record<string, "Paid" | "Unpaid">>({});
+  const [toastMember, setToastMember] = useState<{ name: string; status: "Paid" | "Unpaid" } | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  function paymentStatus(memberTurnNumber: number): "Paid" | "Unpaid" {
-    if (selectedRound < currentRound) return "Paid";
-    if (selectedRound > currentRound) return "Unpaid";
-    return memberTurnNumber <= currentRound ? "Paid" : "Unpaid";
+  useEffect(() => {
+    setSelectedRound(Math.min(paidRounds + 1, tribe.tribeSize));
+  }, [paidRounds, tribe.tribeSize]);
+
+  function resolveStatus(
+    overrides: Record<string, "Paid" | "Unpaid">,
+    memberId: number,
+    memberTurnNumber: number,
+    round: number,
+  ): "Paid" | "Unpaid" {
+    const key = `${memberId}-${round}`;
+    if (key in overrides) return overrides[key];
+    if (round < activeRound) return "Paid";
+    if (round > activeRound) return "Unpaid";
+    return memberTurnNumber < activeRound ? "Paid" : "Unpaid";
+  }
+
+  function getPaymentStatus(memberId: number, memberTurnNumber: number): "Paid" | "Unpaid" {
+    return resolveStatus(paymentOverrides, memberId, memberTurnNumber, selectedRound);
+  }
+
+  function togglePayment(e: React.MouseEvent, m: TribeMember) {
+    e.stopPropagation();
+    const current = getPaymentStatus(m.id, m.turnNumber);
+    const next: "Paid" | "Unpaid" = current === "Paid" ? "Unpaid" : "Paid";
+    const newOverrides = { ...paymentOverrides, [`${m.id}-${selectedRound}`]: next };
+    setPaymentOverrides(newOverrides);
+
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setToastMember({ name: m.name.split(" ")[0], status: next });
+    toastTimer.current = setTimeout(() => setToastMember(null), 2200);
+
+    // Check round completion only when marking Paid in the active round
+    if (next === "Paid" && selectedRound === activeRound) {
+      const nonRecipients = tribe.members.filter(x => x.turnNumber !== activeRound);
+      const allPaid = nonRecipients.every(
+        x => resolveStatus(newOverrides, x.id, x.turnNumber, activeRound) === "Paid"
+      );
+      if (allPaid) {
+        const recipient = tribe.members.find(x => x.turnNumber === activeRound)!;
+        // Brief pause so the last toast is visible before the modal appears
+        setTimeout(() => onRoundComplete(recipient, activeRound), 700);
+      }
+    }
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
+    <div className="flex-1 flex flex-col overflow-hidden relative">
       <div className="px-6 pt-4 pb-3 border-b border-border">
         <label className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide block mb-1.5">Round</label>
         <div className="relative">
@@ -897,32 +1049,78 @@ function TurnsTab({ tribe, onMemberClick }: { tribe: TribeData; onMemberClick: (
             className="w-full h-11 border border-border rounded-lg px-3 pr-8 text-foreground text-[14px] font-medium appearance-none bg-input-background outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 transition-colors"
           >
             {Array.from({ length: tribe.tribeSize }, (_, i) => i + 1).map((r) => (
-              <option key={r} value={r}>Round {r}{r === currentRound ? "  (Current)" : ""}</option>
+              <option key={r} value={r}>
+                Round {r}
+                {r === activeRound ? "  (Current)" : r < activeRound ? "  ✓" : ""}
+              </option>
             ))}
           </select>
           <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-foreground/50 pointer-events-none" />
         </div>
+        {isAdmin && (
+          <p className="text-[10px] text-muted-foreground mt-2">
+            Tap a member's status badge to mark as paid or unpaid.
+          </p>
+        )}
       </div>
+
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-2">
         {tribe.members.map((m) => {
           const isRecipient = m.turnNumber === selectedRound;
+          const isCurrentRecipient = isRecipient && selectedRound === activeRound;
+          const status = getPaymentStatus(m.id, m.turnNumber);
           return (
-            <button
+            <div
               key={m.id}
               onClick={() => onMemberClick(m)}
-              className={`w-full flex items-center gap-4 px-3 py-2.5 rounded-xl transition-colors ${
-                isRecipient ? "bg-primary/10 border border-primary/20" : "hover:bg-muted/40"
+              className={`w-full flex items-center gap-4 px-3 py-2.5 rounded-xl transition-colors cursor-pointer ${
+                isRecipient ? "bg-muted/60 border border-border" : "hover:bg-muted/40"
               }`}
             >
               <TurnBadge member={m} highlighted={isRecipient} />
               <div className="flex-1 text-left min-w-0">
-                <p className={`text-[15px] truncate ${isRecipient ? "font-semibold text-foreground" : "text-foreground"}`}>{m.name}</p>
+                <p className={`text-[15px] truncate ${isRecipient ? "font-semibold text-foreground" : "text-foreground"}`}>
+                  {m.name}
+                  {m.id === tribe.currentUserMemberId && (
+                    <span className="text-muted-foreground font-normal"> (You)</span>
+                  )}
+                </p>
                 {isRecipient && <p className="text-[11px] text-primary font-medium">Recipient this round</p>}
               </div>
-              <PaymentBadge status={paymentStatus(m.turnNumber)} />
-            </button>
+              {isCurrentRecipient ? (
+                <span className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-primary/20 text-primary">
+                  Receiving
+                </span>
+              ) : (
+                <PaymentBadge
+                  status={status}
+                  onToggle={isAdmin ? (e) => togglePayment(e, m) : undefined}
+                />
+              )}
+            </div>
           );
         })}
+      </div>
+
+      {/* Inline toast */}
+      <div
+        className="absolute left-4 right-4 bottom-4 pointer-events-none transition-all duration-300 ease-out"
+        style={{
+          transform: toastMember ? "translateY(0)" : "translateY(12px)",
+          opacity: toastMember ? 1 : 0,
+        }}
+      >
+        {toastMember && (
+          <div
+            className="flex items-center gap-3 px-4 py-3 rounded-2xl shadow-lg"
+            style={{ background: toastMember.status === "Paid" ? "var(--cta-gradient)" : "#555" }}
+          >
+            <CheckCircle size={18} className="text-white flex-shrink-0" />
+            <p className="text-white text-[13px] font-semibold">
+              {toastMember.name} marked as <span className="font-bold">{toastMember.status}</span>
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -953,7 +1151,7 @@ function InfoTab({ tribe }: { tribe: TribeData }) {
     <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
 
       {/* Financial summary */}
-      <div className="p-4 rounded-2xl border border-primary/20 bg-primary/5">
+      <div className="p-4 rounded-2xl border border-border bg-muted/40">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-muted-foreground text-[11px] uppercase tracking-widest font-semibold">Contribution</p>
@@ -962,10 +1160,7 @@ function InfoTab({ tribe }: { tribe: TribeData }) {
           </div>
           <div className="text-right">
             <p className="text-muted-foreground text-[11px] uppercase tracking-widest font-semibold">Total saved</p>
-            <p
-              className="font-extrabold text-[24px] tabular-nums leading-tight"
-              style={{ background: "var(--cta-gradient)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}
-            >
+            <p className="font-extrabold text-[24px] tabular-nums leading-tight text-foreground">
               R {fmt(tribe.goal)}
             </p>
             <p className="text-muted-foreground text-[11px]">per participant</p>
@@ -975,7 +1170,7 @@ function InfoTab({ tribe }: { tribe: TribeData }) {
 
       {/* Your turn */}
       {currentUser && (
-        <div className="p-4 rounded-2xl border border-primary/20 bg-primary/5 flex items-center gap-3">
+        <div className="p-4 rounded-2xl border border-border bg-muted/40 flex items-center gap-3">
           <div
             className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-[16px] flex-shrink-0"
             style={{ background: "var(--cta-gradient)" }}
@@ -1092,7 +1287,12 @@ function InfoTab({ tribe }: { tribe: TribeData }) {
                 {m.turnNumber}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-foreground text-[13px] font-semibold truncate">{m.name}</p>
+                <p className="text-foreground text-[13px] font-semibold truncate">
+                  {m.name}
+                  {m.id === tribe.currentUserMemberId && (
+                    <span className="text-muted-foreground font-normal"> (You)</span>
+                  )}
+                </p>
                 <p className="text-muted-foreground text-[11px] truncate">{m.email}</p>
               </div>
               <MemberStatusBadge status={m.status} />
@@ -1325,6 +1525,8 @@ export default function TribeDetail() {
   const [coverImage, setCoverImage] = useState<string | undefined>(tribe.coverImage);
   const [pendingRequests, setPendingRequests] = useState<JoinRequest[]>(tribe.pendingRequests ?? []);
   const [selectedRequest, setSelectedRequest] = useState<JoinRequest | null>(null);
+  const [paidRounds, setPaidRounds] = useState(tribe.paidOut);
+  const [congratsInfo, setCongratsInfo] = useState<{ recipient: TribeMember; round: number } | null>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
   function handleCoverChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -1353,6 +1555,15 @@ export default function TribeDetail() {
     setSelectedRequest(null);
   }
 
+  function handleRoundComplete(recipient: TribeMember, round: number) {
+    setCongratsInfo({ recipient, round });
+  }
+  function handleCongratsClose() {
+    if (!congratsInfo) return;
+    setPaidRounds(r => Math.min(r + 1, tribe.tribeSize));
+    setCongratsInfo(null);
+  }
+
   const tabs: { key: Tab; label: string; badge?: number }[] = [
     { key: "turns", label: "Turns" },
     { key: "wall",  label: "Wall"  },
@@ -1370,6 +1581,10 @@ export default function TribeDetail() {
       >
         {/* ── Hero header ── */}
         <div className="relative h-[258px] flex-shrink-0 overflow-hidden rounded-bl-[16px] rounded-br-[16px]">
+          {/* Status bar — absolutely overlaid on the dark hero */}
+          <div className="absolute top-0 left-0 right-0 z-20">
+            <MobileStatusBar light />
+          </div>
           {coverImage ? (
             <>
               <img
@@ -1398,14 +1613,14 @@ export default function TribeDetail() {
           {/* Cover image edit button */}
           <button
             onClick={() => coverInputRef.current?.click()}
-            className="absolute top-[66px] right-8 z-10 w-8 h-8 rounded-full bg-black/35 hover:bg-black/55 flex items-center justify-center transition-colors"
+            className="absolute top-11 right-8 z-10 w-8 h-8 rounded-full bg-black/35 hover:bg-black/55 flex items-center justify-center transition-colors"
             aria-label="Change cover photo"
           >
             <Pencil size={13} className="text-white" />
           </button>
 
           {/* Nav row */}
-          <div className="relative z-10 flex items-center justify-between px-8 pt-[62px]">
+          <div className="relative z-10 flex items-center justify-between px-8 pt-9">
             <button onClick={() => navigate("/your-tribes")} className="w-6 h-6">
               <ArrowLeft size={24} className="text-white" />
             </button>
@@ -1448,7 +1663,7 @@ export default function TribeDetail() {
               <p className="text-white text-[16px] font-semibold leading-snug">{tribe.name}</p>
             </div>
             <p className="text-white/70 text-[11px] font-medium mb-0.5">
-              Round <span className="text-white font-bold">{tribe.paidOut}</span> of {tribe.tribeSize}
+              Round <span className="text-white font-bold">{paidRounds}</span> of {tribe.tribeSize}
             </p>
           </div>
 
@@ -1459,7 +1674,7 @@ export default function TribeDetail() {
                 key={i}
                 className="flex-1 h-[4px] rounded-full"
                 style={{
-                  backgroundColor: i < tribe.paidOut
+                  backgroundColor: i < paidRounds
                     ? "rgba(185, 236, 156, 0.72)"
                     : "rgba(255,255,255,0.15)",
                 }}
@@ -1479,7 +1694,7 @@ export default function TribeDetail() {
 
         {/* ── Tab content ── */}
         <div className="flex-1 flex flex-col overflow-hidden bg-background">
-          {activeTab === "turns"    && <TurnsTab tribe={tribe} onMemberClick={setSelectedMember} />}
+          {activeTab === "turns"    && <TurnsTab tribe={tribe} isAdmin={isAdmin} paidRounds={paidRounds} onMemberClick={setSelectedMember} onRoundComplete={handleRoundComplete} />}
           {activeTab === "wall"     && <WallTab  tribe={tribe} />}
           {activeTab === "info"     && <InfoTab  tribe={tribe} />}
           {activeTab === "requests" && (
@@ -1491,6 +1706,17 @@ export default function TribeDetail() {
             />
           )}
         </div>
+
+        {/* ── Congratulations modal ── */}
+        {congratsInfo && (
+          <CongratsModal
+            recipient={congratsInfo.recipient}
+            round={congratsInfo.round}
+            tribeSize={tribe.tribeSize}
+            payout={tribe.goal}
+            onClose={handleCongratsClose}
+          />
+        )}
 
         {/* ── Join request profile sheet ── */}
         {selectedRequest && (

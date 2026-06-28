@@ -61,7 +61,7 @@ export default function HamburgerMenu({ open, onClose }: HamburgerMenuProps) {
         </div>
 
         {/* User card */}
-        <div className="mx-5 mb-5 p-4 rounded-2xl flex items-center gap-3 flex-shrink-0 border border-primary/20 bg-primary/5">
+        <div className="mx-5 mb-5 p-4 rounded-2xl flex items-center gap-3 flex-shrink-0 border border-border bg-muted/40">
           <div
             className="w-12 h-12 rounded-full flex items-center justify-center text-white text-[15px] font-bold flex-shrink-0"
             style={{ background: "var(--cta-gradient)" }}
@@ -86,7 +86,7 @@ export default function HamburgerMenu({ open, onClose }: HamburgerMenuProps) {
                 key={path}
                 onClick={() => handleNav(path)}
                 className={`w-full flex items-center gap-4 px-5 py-3.5 transition-colors text-left ${
-                  active ? "bg-primary/8" : "hover:bg-muted/60 active:bg-muted"
+                  active ? "bg-muted" : "hover:bg-muted/60 active:bg-muted"
                 }`}
               >
                 <div
@@ -99,14 +99,14 @@ export default function HamburgerMenu({ open, onClose }: HamburgerMenuProps) {
                 </div>
                 <span
                   className={`flex-1 text-[15px] font-medium transition-colors ${
-                    active ? "text-primary" : "text-foreground"
+                    active ? "text-foreground font-semibold" : "text-foreground"
                   }`}
                 >
                   {label}
                 </span>
                 <ChevronRight
                   size={16}
-                  className={active ? "text-primary" : "text-muted-foreground"}
+                  className={active ? "text-muted-foreground" : "text-muted-foreground"}
                 />
               </button>
             );

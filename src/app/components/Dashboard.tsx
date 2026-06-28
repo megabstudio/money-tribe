@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import {
   Moon, Sun, ChevronRight, Plus,
-  Home, MessageCircle, User, Calendar, Menu, Compass,
+  Home, MessageCircle, LayoutGrid, Calendar, Menu, Compass,
 } from "lucide-react";
 import HamburgerMenu from "./HamburgerMenu";
+import MobileStatusBar from "./MobileStatusBar";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -83,7 +84,7 @@ function TribeCard({ tribe, onClick }: { tribe: Tribe; onClick: () => void }) {
         {/* Name + status badge */}
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[20px] flex-shrink-0 bg-primary/10">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[20px] flex-shrink-0 bg-muted">
               {tribe.emoji}
             </div>
             <div className="min-w-0">
@@ -103,10 +104,7 @@ function TribeCard({ tribe, onClick }: { tribe: Tribe; onClick: () => void }) {
             </span>
           )}
           {!isOpen && !isStartingSoon && (
-            <span
-              className="flex-shrink-0 px-2.5 py-1 rounded-full text-white text-[11px] font-bold"
-              style={{ background: "var(--cta-gradient)" }}
-            >
+            <span className="flex-shrink-0 px-2.5 py-1 rounded-full bg-muted text-foreground text-[11px] font-bold">
               Rnd {tribe.currentRound}/{tribe.totalRounds}
             </span>
           )}
@@ -137,7 +135,7 @@ function TribeCard({ tribe, onClick }: { tribe: Tribe; onClick: () => void }) {
               <span className="text-[12px] text-muted-foreground">
                 <span className="font-semibold text-foreground">{emptySlots}</span> slot{emptySlots !== 1 ? "s" : ""} still open
               </span>
-              <div className="flex items-center gap-0.5 text-emerald-600 dark:text-emerald-400 text-[12px] font-semibold">
+              <div className="flex items-center gap-0.5 text-muted-foreground text-[12px] font-semibold">
                 Invite <ChevronRight size={13} />
               </div>
             </div>
@@ -150,7 +148,7 @@ function TribeCard({ tribe, onClick }: { tribe: Tribe; onClick: () => void }) {
               <span className="px-2 py-0.5 bg-muted rounded-md text-foreground text-[12px] font-semibold">
                 {tribe.totalSlots} members
               </span>
-              <span className="px-2 py-0.5 rounded-md text-[12px] font-semibold text-primary bg-primary/10">
+              <span className="px-2 py-0.5 rounded-md text-[12px] font-semibold text-muted-foreground bg-muted">
                 Starting soon
               </span>
             </div>
@@ -161,7 +159,7 @@ function TribeCard({ tribe, onClick }: { tribe: Tribe; onClick: () => void }) {
                   className="flex-1 h-1.5 rounded-full"
                   style={
                     i < (tribe.filledSlots ?? 0)
-                      ? { backgroundColor: "#1a4500" }
+                      ? { backgroundColor: "var(--color-foreground)" }
                       : { backgroundColor: "var(--color-border, hsl(var(--border)))" }
                   }
                 />
@@ -172,7 +170,7 @@ function TribeCard({ tribe, onClick }: { tribe: Tribe; onClick: () => void }) {
                 <Calendar size={12} />
                 <span className="text-[12px]">Starts {tribe.startDate}</span>
               </div>
-              <div className="flex items-center gap-0.5 text-primary text-[12px] font-semibold">
+              <div className="flex items-center gap-0.5 text-muted-foreground text-[12px] font-semibold">
                 View <ChevronRight size={13} />
               </div>
             </div>
@@ -196,7 +194,7 @@ function TribeCard({ tribe, onClick }: { tribe: Tribe; onClick: () => void }) {
                   className="flex-1 h-1.5 rounded-full"
                   style={
                     i < tribe.currentRound
-                      ? { backgroundColor: "#1a4500" }
+                      ? { backgroundColor: "var(--color-foreground)" }
                       : { backgroundColor: "var(--color-border, hsl(var(--border)))" }
                   }
                 />
@@ -207,7 +205,7 @@ function TribeCard({ tribe, onClick }: { tribe: Tribe; onClick: () => void }) {
                 <Calendar size={12} />
                 <span className="text-[12px]">Next cash {tribe.cashDate}</span>
               </div>
-              <div className="flex items-center gap-0.5 text-primary text-[12px] font-semibold">
+              <div className="flex items-center gap-0.5 text-muted-foreground text-[12px] font-semibold">
                 View <ChevronRight size={13} />
               </div>
             </div>
@@ -220,15 +218,15 @@ function TribeCard({ tribe, onClick }: { tribe: Tribe; onClick: () => void }) {
 
 // ─── Dashboard ──────────────────────────────────────────────────────────────────────
 
-type NavTab = "home" | "messages" | "find" | "user"
+type NavTab = "home" | "messages" | "find" | "tribes"
 
 const NAV_ITEMS_LEFT:  { id: NavTab; Icon: typeof Home; label: string }[] = [
   { id: "home",     Icon: Home,          label: "Home"     },
   { id: "messages", Icon: MessageCircle, label: "Messages" },
 ]
 const NAV_ITEMS_RIGHT: { id: NavTab; Icon: typeof Home; label: string }[] = [
-  { id: "find", Icon: Compass, label: "Find" },
-  { id: "user", Icon: User,    label: "Profile" },
+  { id: "find",   Icon: Compass,     label: "Find"       },
+  { id: "tribes", Icon: LayoutGrid,  label: "Your tribes" },
 ]
 
 export default function Dashboard() {
@@ -240,6 +238,7 @@ export default function Dashboard() {
   const handleNavClick = (id: NavTab) => {
     if (id === "messages") { navigate("/messages"); return; }
     if (id === "find")     { navigate("/find-tribe"); return; }
+    if (id === "tribes")   { navigate("/your-tribes"); return; }
     setActiveTab(id);
   }
   useEffect(() => {
@@ -253,34 +252,7 @@ return (
         className="relative w-full max-w-[390px] bg-background overflow-hidden flex flex-col md:rounded-[44px] md:shadow-2xl md:border md:border-border"
         style={{ minHeight: "100svh", maxHeight: "100svh", height: "100svh" }}
       >
-        {/* ── Status bar ── */}
-        <div className="flex-shrink-0 flex justify-between items-center px-7 pt-4 pb-1">
-          <span className="text-[12px] font-semibold text-foreground/70">9:41</span>
-          <div className="flex items-center gap-2 text-foreground/70">
-            {/* Signal bars */}
-            <div className="flex items-end gap-[2px]">
-              {[1, 2, 3, 4].map((h) => (
-                <div
-                  key={h}
-                  className="w-[3px] rounded-[1px] bg-current"
-                  style={{ height: `${h * 3}px` }}
-                />
-              ))}
-            </div>
-            {/* WiFi */}
-            <svg width="15" height="11" viewBox="0 0 15 11" fill="currentColor">
-              <path d="M7.5 8.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z" />
-              <path d="M3.5 5.2a5.7 5.7 0 0 1 8 0l1.1-1.1a7.3 7.3 0 0 0-10.2 0l1.1 1.1z" />
-              <path d="M5.7 7.4a2.8 2.8 0 0 1 3.6 0l1.1-1.1a4.3 4.3 0 0 0-5.8 0l1.1 1.1z" />
-              <path d="M1.4 2.9a9.3 9.3 0 0 1 12.2 0l1-1A10.8 10.8 0 0 0 .4 1.9l1 1z" />
-            </svg>
-            {/* Battery */}
-            <div className="relative w-[22px] h-[11px] rounded-[3px] border border-current/60">
-              <div className="absolute left-[2px] top-[2px] bottom-[2px] w-[13px] bg-current rounded-[1px]" />
-              <div className="absolute right-[-3px] top-[3px] bottom-[3px] w-[2px] bg-current/60 rounded-r-[1px]" />
-            </div>
-          </div>
-        </div>
+        <MobileStatusBar />
 
         {/* ── Scrollable body ── */}
         <div
@@ -343,20 +315,13 @@ return (
                   Next Cash
                 </p>
               </div>
-              <p
-                className="text-[28px] font-bold leading-tight mt-2"
-                style={{
-                  background: "var(--cta-gradient)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
+              <p className="text-[28px] font-bold leading-tight mt-2 text-foreground">
                 Jun 15
               </p>
               <p className="text-[12px] text-muted-foreground">2025</p>
               <div className="mt-auto pt-3">
                 <p className="text-[12px] font-semibold text-foreground truncate">Vacation Fund</p>
-                <p className="text-[11px] font-bold text-primary mt-0.5">In 20 days</p>
+                <p className="text-[11px] font-bold text-muted-foreground mt-0.5">In 20 days</p>
               </div>
             </div>
           </div>
@@ -372,7 +337,7 @@ return (
               </h2>
               <button
                 onClick={() => navigate('/your-tribes')}
-                className="flex items-center gap-0.5 text-[13px] font-semibold text-primary"
+                className="flex items-center gap-0.5 text-[13px] font-semibold text-muted-foreground"
               >
                 See all <ChevronRight size={14} />
               </button>

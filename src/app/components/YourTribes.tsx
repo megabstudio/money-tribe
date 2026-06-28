@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router'
 import { ArrowLeft, Calendar, Search, ChevronRight } from 'lucide-react'
+import MobileStatusBar from './MobileStatusBar'
 
 interface Tribe {
   id: number
@@ -45,7 +46,7 @@ function TribeCard({ tribe, onClick }: { tribe: Tribe; onClick: () => void }) {
         {/* Name row */}
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[20px] flex-shrink-0 bg-primary/10">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center text-[20px] flex-shrink-0 bg-muted">
               {tribe.emoji}
             </div>
             <div className="min-w-0">
@@ -63,10 +64,7 @@ function TribeCard({ tribe, onClick }: { tribe: Tribe; onClick: () => void }) {
             </span>
           )}
           {!isOpen && !isStartingSoon && (
-            <span
-              className="flex-shrink-0 px-2.5 py-1 rounded-full text-white text-[11px] font-bold"
-              style={{ background: "var(--cta-gradient)" }}
-            >
+            <span className="flex-shrink-0 px-2.5 py-1 rounded-full bg-muted text-foreground text-[11px] font-bold">
               Rnd {tribe.currentRound}/{tribe.totalRounds}
             </span>
           )}
@@ -98,7 +96,7 @@ function TribeCard({ tribe, onClick }: { tribe: Tribe; onClick: () => void }) {
               <span className="text-[12px] text-muted-foreground">
                 <span className="font-semibold text-foreground">{emptySlots}</span> slot{emptySlots !== 1 ? "s" : ""} still open
               </span>
-              <div className="flex items-center gap-0.5 text-emerald-600 dark:text-emerald-400 text-[12px] font-semibold">
+              <div className="flex items-center gap-0.5 text-muted-foreground text-[12px] font-semibold">
                 Invite <ChevronRight size={13} />
               </div>
             </div>
@@ -112,7 +110,7 @@ function TribeCard({ tribe, onClick }: { tribe: Tribe; onClick: () => void }) {
               <span className="px-2 py-0.5 bg-muted rounded-md text-foreground text-[12px] font-semibold">
                 {tribe.totalSlots} members
               </span>
-              <span className="px-2 py-0.5 rounded-md text-[12px] font-semibold text-primary bg-primary/10">
+              <span className="px-2 py-0.5 rounded-md text-[12px] font-semibold text-muted-foreground bg-muted">
                 Starting soon
               </span>
             </div>
@@ -123,7 +121,7 @@ function TribeCard({ tribe, onClick }: { tribe: Tribe; onClick: () => void }) {
                   className="flex-1 h-1.5 rounded-full"
                   style={
                     i < (tribe.filledSlots ?? 0)
-                      ? { backgroundColor: "#1a4500" }
+                      ? { backgroundColor: "var(--color-foreground)" }
                       : { backgroundColor: "var(--color-border, hsl(var(--border)))" }
                   }
                 />
@@ -134,7 +132,7 @@ function TribeCard({ tribe, onClick }: { tribe: Tribe; onClick: () => void }) {
                 <Calendar size={12} />
                 <span className="text-[12px]">Starts {tribe.startDate}</span>
               </div>
-              <div className="flex items-center gap-0.5 text-primary text-[12px] font-semibold">
+              <div className="flex items-center gap-0.5 text-muted-foreground text-[12px] font-semibold">
                 View <ChevronRight size={13} />
               </div>
             </div>
@@ -159,7 +157,7 @@ function TribeCard({ tribe, onClick }: { tribe: Tribe; onClick: () => void }) {
                   className="flex-1 h-1.5 rounded-full"
                   style={
                     i < tribe.currentRound
-                      ? { backgroundColor: "#1a4500" }
+                      ? { backgroundColor: "var(--color-foreground)" }
                       : { backgroundColor: "var(--color-border, hsl(var(--border)))" }
                   }
                 />
@@ -170,7 +168,7 @@ function TribeCard({ tribe, onClick }: { tribe: Tribe; onClick: () => void }) {
                 <Calendar size={12} />
                 <span className="text-[12px]">Next cash {tribe.cashDate}</span>
               </div>
-              <div className="flex items-center gap-0.5 text-primary text-[12px] font-semibold">
+              <div className="flex items-center gap-0.5 text-muted-foreground text-[12px] font-semibold">
                 View <ChevronRight size={13} />
               </div>
             </div>
@@ -185,24 +183,26 @@ export default function YourTribes() {
   const navigate = useNavigate()
 
   return (
-    <div className="min-h-screen bg-background flex items-start justify-center md:items-center md:py-8">
+    <div className="h-screen overflow-hidden bg-background flex items-start justify-center md:items-center md:py-8">
       <div
-        className="relative w-full max-w-[390px] bg-background overflow-hidden flex flex-col md:rounded-[44px] md:shadow-2xl md:border md:border-border"
-        style={{ minHeight: '100svh', maxHeight: '100svh', height: '100svh' }}
+        className="relative w-full max-w-[390px] bg-background flex flex-col md:rounded-[44px] md:shadow-2xl md:border md:border-border"
+        style={{ height: '100svh' }}
       >
-        <div className="overflow-y-auto scrollbar-hide flex-1">
+        <MobileStatusBar />
 
-          {/* Header */}
-          <div className="flex items-center gap-3 px-4 py-4 sticky top-0 bg-background border-b border-border">
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="w-9 h-9 flex items-center justify-center text-foreground hover:text-primary transition-colors"
-            >
-              <ArrowLeft size={24} />
-            </button>
-            <h1 className="font-bold text-foreground text-base">Your tribes</h1>
-          </div>
+        {/* Header — fixed at top, outside scroll container */}
+        <div className="flex-shrink-0 flex items-center gap-3 px-4 py-4 bg-background border-b border-border">
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="w-9 h-9 flex items-center justify-center text-foreground hover:text-foreground/70 transition-colors"
+          >
+            <ArrowLeft size={24} />
+          </button>
+          <h1 className="font-bold text-foreground text-base">Your tribes</h1>
+        </div>
 
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto scrollbar-hide">
           {/* Search */}
           <div className="px-4 py-4 relative">
             <Search size={16} className="absolute left-7 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
