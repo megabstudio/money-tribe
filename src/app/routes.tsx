@@ -8,6 +8,8 @@ import TribeDetail from './components/TribeDetail'
 import CreateTribe from './components/CreateTribe'
 import Messages from './components/Messages'
 import FindTribe from './components/FindTribe'
+import Analytics from './components/Analytics'
+import Profile from './components/Profile'
 import ProtectedRoute from './components/ProtectedRoute'
 
 export const router = createBrowserRouter([
@@ -68,6 +70,22 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <FindTribe />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/analytics',
+    element: (
+      <ProtectedRoute>
+        <Analytics />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/profile',
+    element: (
+      <ProtectedRoute>
+        <Profile />
       </ProtectedRoute>
     ),
   },

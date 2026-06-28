@@ -1,19 +1,28 @@
 import { useNavigate, useLocation } from "react-router";
 import {
-  X, User, BarChart2, Compass, Users, Bell, ChevronRight, LogOut,
+  X, BarChart2, Compass, Users, MessageCircle, ChevronRight, LogOut,
 } from "lucide-react";
+import { useAuth } from "../../lib/auth";
 
-// ─── Menu definition ─────────────────────────────────────────────────────────
+// ── Mock user display data ─────────────────────────────────────────────────────
+
+const USER = {
+  firstName: "Amara",
+  lastName:  "Johnson",
+  initials:  "AJ",
+  email:     "amara@moneytribe.co.za",
+};
+
+// ── Menu items ─────────────────────────────────────────────────────────────────
 
 const MENU_ITEMS = [
-  { icon: User,     label: "Profile",      path: "/profile"        },
-  { icon: BarChart2, label: "Analytics",   path: "/analytics"      },
-  { icon: Compass,  label: "Find a tribe", path: "/find-tribe"     },
-  { icon: Users,    label: "Your tribes",  path: "/your-tribes"    },
-  { icon: Bell,     label: "Notifications", path: "/notifications" },
-] as const;
+  { icon: BarChart2,     label: "Analytics",    path: "/analytics"   },
+  { icon: MessageCircle, label: "Messages",     path: "/messages"    },
+  { icon: Compass,       label: "Find a tribe", path: "/find-tribe"  },
+  { icon: Users,         label: "Your tribes",  path: "/your-tribes" },
+];
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// ── Component ──────────────────────────────────────────────────────────────────
 
 interface HamburgerMenuProps {
   open: boolean;
@@ -21,29 +30,39 @@ interface HamburgerMenuProps {
 }
 
 export default function HamburgerMenu({ open, onClose }: HamburgerMenuProps) {
-  const navigate  = useNavigate();
-  const location  = useLocation();
+  const navigate    = useNavigate();
+  const location    = useLocation();
+  const { signOut } = useAuth();
 
-  function handleNav(path: string) {
+  function go(path: string) {
     onClose();
     navigate(path);
   }
 
+  async function handleSignOut() {
+    onClose();
+    await signOut();
+    navigate("/");
+  }
+
   return (
-    /* Outer container — fills the phone frame, sits on top of everything */
     <div
-      className={`absolute inset-0 z-40 transition-all duration-300 ${open ? "pointer-events-auto" : "pointer-events-none"}`}
+      className={`absolute inset-0 z-40 transition-all duration-300 ${
+        open ? "pointer-events-auto" : "pointer-events-none"
+      }`}
     >
       {/* Backdrop */}
       <div
-        className={`absolute inset-0 transition-opacity duration-300 ${open ? "opacity-100" : "opacity-0"}`}
+        className={`absolute inset-0 transition-opacity duration-300 ${
+          open ? "opacity-100" : "opacity-0"
+        }`}
         style={{ background: "rgba(0,0,0,0.45)" }}
         onClick={onClose}
       />
 
-      {/* Drawer — slides in from the right */}
+      {/* Drawer */}
       <div
-        className={`absolute top-0 right-0 bottom-0 bg-card flex flex-col shadow-2xl transition-transform duration-300 ease-out`}
+        className="absolute top-0 right-0 bottom-0 bg-card flex flex-col shadow-2xl transition-transform duration-300 ease-out"
         style={{
           width: "82%",
           transform: open ? "translateX(0)" : "translateX(100%)",
@@ -60,31 +79,37 @@ export default function HamburgerMenu({ open, onClose }: HamburgerMenuProps) {
           </button>
         </div>
 
-        {/* User card */}
-        <div className="mx-5 mb-5 p-4 rounded-2xl flex items-center gap-3 flex-shrink-0 border border-border bg-muted/40">
+        {/* User card — navigates to profile */}
+        <button
+          onClick={() => go("/profile")}
+          className="mx-5 mb-5 p-4 rounded-2xl flex items-center gap-3 flex-shrink-0 border border-border bg-muted/40 hover:bg-muted/70 active:bg-muted transition-colors text-left"
+        >
           <div
             className="w-12 h-12 rounded-full flex items-center justify-center text-white text-[15px] font-bold flex-shrink-0"
             style={{ background: "var(--cta-gradient)" }}
           >
-            AJ
+            {USER.initials}
           </div>
-          <div className="min-w-0">
-            <p className="text-foreground font-bold text-[15px] leading-tight truncate">Amara Johnson</p>
-            <p className="text-muted-foreground text-[12px] truncate mt-0.5">amara@moneytribe.co.za</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-foreground font-bold text-[15px] leading-tight truncate">
+              {USER.firstName} {USER.lastName}
+            </p>
+            <p className="text-muted-foreground text-[12px] truncate mt-0.5">{USER.email}</p>
           </div>
-        </div>
+          <ChevronRight size={16} className="text-muted-foreground flex-shrink-0" />
+        </button>
 
         {/* Divider */}
         <div className="mx-5 h-px bg-border mb-2 flex-shrink-0" />
 
-        {/* Nav items */}
-        <nav className="flex-1 overflow-y-auto py-2">
+        {/* Nav list */}
+        <nav className="flex-1 overflow-y-auto scrollbar-hide py-2">
           {MENU_ITEMS.map(({ icon: Icon, label, path }) => {
             const active = location.pathname === path;
             return (
               <button
                 key={path}
-                onClick={() => handleNav(path)}
+                onClick={() => go(path)}
                 className={`w-full flex items-center gap-4 px-5 py-3.5 transition-colors text-left ${
                   active ? "bg-muted" : "hover:bg-muted/60 active:bg-muted"
                 }`}
@@ -98,16 +123,13 @@ export default function HamburgerMenu({ open, onClose }: HamburgerMenuProps) {
                   <Icon size={18} />
                 </div>
                 <span
-                  className={`flex-1 text-[15px] font-medium transition-colors ${
-                    active ? "text-foreground font-semibold" : "text-foreground"
+                  className={`flex-1 text-[15px] ${
+                    active ? "font-semibold text-foreground" : "font-medium text-foreground"
                   }`}
                 >
                   {label}
                 </span>
-                <ChevronRight
-                  size={16}
-                  className={active ? "text-muted-foreground" : "text-muted-foreground"}
-                />
+                <ChevronRight size={16} className="text-muted-foreground" />
               </button>
             );
           })}
@@ -116,6 +138,7 @@ export default function HamburgerMenu({ open, onClose }: HamburgerMenuProps) {
         {/* Sign out */}
         <div className="px-5 py-6 flex-shrink-0 border-t border-border">
           <button
+            onClick={handleSignOut}
             className="w-full h-12 rounded-xl border border-border flex items-center justify-center gap-2 text-muted-foreground text-[14px] font-medium hover:bg-muted hover:text-foreground transition-all"
           >
             <LogOut size={16} />
